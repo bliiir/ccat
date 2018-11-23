@@ -1,5 +1,4 @@
-# Bit crypto trading platform
-Lorem ipsum
+# Crypto Currency Auto Trader
 
 ## Project structure
 
@@ -60,6 +59,3 @@ lib/
 				allocations to different buckets - like hodl, invest, trade
 
 					{rebalance()}
-
-
-BIT crypto trading platform
