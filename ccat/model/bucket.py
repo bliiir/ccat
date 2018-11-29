@@ -18,11 +18,11 @@ pass
 
 # Third party imports
 import pandas as pd
-ccat
+
 # Local application imports
-from ccat.exchange import Exchange as ex
-import ccat.config as cf
-from ccat.engine import SqlEngine as ngn
+from ccat import config as cf
+from ccat import Exchange as ex
+from ccat import Sql_engine as ngn
 
 '''
 ------------------------------------------------------------------------
@@ -181,7 +181,7 @@ class Bucket():
             AND time_close <= {time_end} \
             ORDER BY time_close DESC \
             LIMIT {count}'
-        print(query)
+
         return self.read_execute(query, sort_col, sort_dir)
 
 
@@ -273,7 +273,7 @@ class Bucket():
 
 if __name__ == '__main__':
 
-    # import time
+    import time
 
     cp1 = cf.now()
     print('checkpoint: ', cp1)

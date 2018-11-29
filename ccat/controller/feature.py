@@ -21,8 +21,7 @@ import pandas as pd
 import numpy as np
 
 # Local application imports
-import ccat.bucket as bucket
-
+pass
 
 '''
 ------------------------------------------------------------------------
@@ -170,8 +169,10 @@ def diff_percent(df_in:pd.DataFrame, col_1:str, col_2:str) -> pd.DataFrame:
 
 if __name__ == '__main__':
 
+    from ccat import Bucket
+
     # Get a bucket object from Bucket
-    b = bucket.Bucket(market_id=1,timeframe_id=1)
+    b = Bucket(market_id=1,timeframe_id=1)
 
     # Update the table
     b.update()

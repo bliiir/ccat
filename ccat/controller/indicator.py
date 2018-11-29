@@ -217,11 +217,11 @@ def rsi(
 if __name__ == '__main__':
 
     # imports
-    import bit.model.bucket as bucket
-    import bit.controller.feature as feature
+    from ccat import Bucket
+    from ccat import feature
 
     # Get a bucket object from Bucket
-    b = bucket.Bucket(market_id=1,timeframe_id=1)
+    b = Bucket(market_id=1,timeframe_id=1)
 
     # Update the table
     b.update()

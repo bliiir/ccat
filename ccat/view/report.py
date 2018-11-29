@@ -21,10 +21,10 @@ import pandas as pd
 
 
 # Local application imports
-import ccat.model.bucket as bucket
-import ccat.controller.feature as feature
-import ccat.controller.indicator as indicator
-import ccat.config as cf
+from ccat import Bucket
+from ccat import feature
+from ccat import indicator
+from ccat import config as cf
 
 
 '''
@@ -61,7 +61,7 @@ class Report():
 
 
         # Createa a bucket object
-        self.bucket = bucket.Bucket(
+        self.bucket = Bucket(
             market_id=self.market_id,
             timeframe_id=self.timeframe_id)
 

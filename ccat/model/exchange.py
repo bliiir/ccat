@@ -19,10 +19,9 @@ import json
 import pandas as pd
 import ccxt
 import psycopg2
-from sqlalchemy import create_engine
 
 # Local application imports
-from ccat.engine import SqlEngine as ngn
+from ccat import Sql_engine as ngn
 
 '''
 ------------------------------------------------------------------------- - - -
@@ -58,7 +57,7 @@ class Exchange():
                 self.client = ccxt.bitmex({'apiKey': self.api_key, 'secret': self.api_secret})
                 return self.client
 
-            # ADD MORE EXCHANGES HERE
+            ##### ADD MORE EXCHANGES HERE #####
 
             else:
                 raise Exception('CLIENT ERROR: Exchange not registered in the system')
