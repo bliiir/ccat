@@ -1,35 +1,47 @@
-# CCAT: [C]rypto [C]urrency [A]uto [T]rader - pronounced [see-cat]
+'''
+------------------------------------------------------------------------
+    __INIT__.PY
+------------------------------------------------------------------------
+Package constructor for CCAT:
+[C]rypto [C]urrency [A]uto [T]rader - pronounced [see-cat]
+'''
+
 name = 'ccat'
 
+'''
+------------------------------------------------------------------------
+    MODEL
+------------------------------------------------------------------------
+'''
 
-# # Config
-# import ccat.config as config
+import ccat.model.engine as engine
+import ccat.model.exchange as exchange
+import ccat.model.bucket as bucket
 
-# # Models
-# import ccat.model.bucket as bucket
-# from ccat.model.engine import Sql_engine
+'''
+------------------------------------------------------------------------
+    CONTROLLER
+------------------------------------------------------------------------
+'''
 
-# make the engine module available in all other files so that we can use
-# for example engine.Sql_engine(...) instead of
-# ccat.model.engine.Sql_engine(...)
-# import ccat.model.engine as engine
+# Features
+import ccat.controller.feature.height as height
+import ccat.controller.feature.diff as diff
+
+# Indicators
+import ccat.controller.indicator.ema as ema
+import ccat.controller.indicator.sma as sma
+import ccat.controller.indicator.rsi as rsi
+
+# Cross
+import ccat.controller.cross.df_x_df as df_x_df
+import ccat.controller.cross.df_x_val as df_x_val
 
 
-# import ccat.model.exchange as exchange
-from ccat.model.engine import Sql_engine
-from ccat.model.exchange import Exchange
-from ccat.model.bucket import Bucket
-from ccat.model import bucket
-
-
-# # Controllers
-import ccat.controller.feature as feature
-import ccat.controller.indicator as indicator
-import ccat.controller.signal as signal
 
 # # Strategies
 # #import ccat.controller.strategy.s_1542995464 as s2
 
 # # Views
-from ccat.view import report
+# from ccat.view import report
 
