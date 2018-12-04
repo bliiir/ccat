@@ -15,16 +15,15 @@ from math import floor
 ------------------------------------------------------------------------- - - -
 '''
 
-# [postgres]
-pg_dialect = "postgresql"
-pg_driver = "psycopg2"
-pg_host = "localhost"
-pg_name = "bit_002"
-pg_user = os.environ["POSTGRES_UN"]
-pg_password = os.environ['POSTGRES_PW']
+# Database
+db_dialect = "postgresql"
+db_driver = "psycopg2"
+db_host = "localhost"
+db_name = "bit_002"
+db_user = os.environ["POSTGRES_UN"]
+db_password = os.environ['POSTGRES_PW']
 
-
-# [time]
+# Time
 def now():
     return floor(time.time()*1000)
 
@@ -42,7 +41,7 @@ def month_ago():
 
 '''
 ------------------------------------------------------------------------- - - -
-    SCOPE
+    MAIN
 ------------------------------------------------------------------------- - - -
 '''
 
