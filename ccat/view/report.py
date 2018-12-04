@@ -21,10 +21,13 @@ import pandas as pd
 
 
 # Local application imports
-from ccat import Bucket
-from ccat import feature
-from ccat import indicator
-from ccat import config as cf
+# from ccat import Bucket
+from ccat import bucket as bct
+from ccat import height as hgt
+from ccat import indicator as ict
+from ccat import config as cnf
+
+
 
 
 '''
@@ -44,8 +47,8 @@ class Report():
         market_id = 1,
         timeframe_id = 1,
         count = 100,
-        time_begin = cf.month_ago(),
-        time_end = cf.now()):
+        time_begin = cnf.month_ago(),
+        time_end = cnf.now()):
 
         '''Constructor for the Report class. Takes arguments and creates
         A new bucket object with them and then reads a dataframe with
@@ -61,7 +64,7 @@ class Report():
 
 
         # Createa a bucket object
-        self.bucket = Bucket(
+        self.bucket = bct.Bucket(
             market_id=self.market_id,
             timeframe_id=self.timeframe_id)
 
@@ -72,7 +75,7 @@ class Report():
         self.df_bucket = self.bucket.read_between(time_begin, time_end)
 
         # Calculate the height features
-        self.df_height = feature.height(self.df_bucket)
+        self.df_height = hgt.height(self.df_bucket)
 
     # SMA
     def indicator_sma(
