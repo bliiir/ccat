@@ -21,7 +21,7 @@ import ccxt
 import psycopg2
 
 # Local application imports
-from ccat import Sql_engine as ngn
+from ccat import engine as ngn
 
 '''
 ------------------------------------------------------------------------- - - -
@@ -40,7 +40,7 @@ class Exchange():
 
         '''Read exchange data from the database'''
         query = f'SELECT * FROM exchange WHERE id={self.id}'
-        df = pd.read_sql(sql=query, con=ngn.get())
+        df = pd.read_sql(sql=query, con=ngn.Db.get())
 
         # Set the instance variables
         self.name = df.name

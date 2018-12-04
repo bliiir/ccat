@@ -19,14 +19,14 @@ from ccat import config as cf
 ------------------------------------------------------------------------- - - -
 '''
 
-class Sql_engine():
+class Db():
 
     # Class objects
-    params = f'{cf.pg_dialect}+{cf.pg_driver}://{cf.pg_user}:{cf.pg_password}@{cf.pg_host}/{cf.pg_name}'
+    params = f'{cf.db_dialect}+{cf.db_driver}://{cf.db_user}:{cf.db_password}@{cf.db_host}/{cf.db_name}'
     engine = create_engine(params)
 
     def get():
-        return Sql_engine.engine
+        return Db.engine
 
 
 '''
@@ -37,5 +37,5 @@ class Sql_engine():
 
 # Run if executed directly. Do not run it if import
 if __name__ == '__main__':
-    ngn = Sql_engine.get()
+    ngn = Db.get()
     print(ngn)

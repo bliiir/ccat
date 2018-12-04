@@ -20,9 +20,10 @@ pass
 import pandas as pd
 
 # Local application imports
-from ccat import config as cf
-from ccat import Exchange as ex
-from ccat import Sql_engine as ngn
+from ccat import config as cnf
+from ccat import exchange as exn
+from ccat import engine as ngn
+
 
 '''
 ------------------------------------------------------------------------
@@ -48,7 +49,7 @@ class Bucket():
         sql = f'''SELECT * FROM instrument
                             WHERE market_id={self.market_id}'''
 
-        self.df_instr = pd.read_sql(sql=sql, con=ngn.get())
+        self.df_instr = pd.read_sql(sql=sql, con=ngn.Db.get())
 
         self.market_id = self.df_instr.market_id[0]
         self.market_symbol_native = self.df_instr.market_symbol_native[0]
@@ -73,7 +74,7 @@ class Bucket():
         sql = f'SELECT * FROM timeframe \
                 WHERE id={self.timeframe_id}'
 
-        self.df_timeframe = pd.read_sql(sql=sql, con=ngn.get())
+        self.df_timeframe = pd.read_sql(sql=sql, con=ngn.Db.get())
 
         self.timeframe_name = self.df_timeframe.name[0]
         self.timeframe_ms = self.df_timeframe.milliseconds[0]
@@ -87,7 +88,7 @@ class Bucket():
     def read_execute(self, query, sort_col, sort_dir):
 
         # Execute the query and store it in a pandas dataframe
-        df_buckets = pd.read_sql(sql=query, con=ngn.get())
+        df_buckets = pd.read_sql(sql=query, con=ngn.Db.get())
 
         # Sort by sort_col and direction
         df_buckets = df_buckets.sort_values(by=[sort_col],
@@ -113,8 +114,8 @@ class Bucket():
 
     def read_between(
         self,
-        time_begin: int = cf.month_ago(),
-        time_end: int = cf.now(),
+        time_begin: int = cnf.month_ago(),
+        time_end: int = cnf.now(),
         sort_col: str = 'time_close',
         sort_dir: str = 'DESC'):
 
@@ -149,7 +150,7 @@ class Bucket():
 
     def read_from(
         self,
-        time_begin=cf.month_ago(),
+        time_begin=cnf.month_ago(),
         count=100,
         sort_col:str = 'time_close',
         sort_dir:str = 'DESC'):
@@ -168,7 +169,7 @@ class Bucket():
 
     def read_until(
         self,
-        time_end= cf.now(),
+        time_end= cnf.now(),
         count=100,
         sort_col:str = 'time_close',
         sort_dir:str = 'DESC'):
@@ -190,7 +191,7 @@ class Bucket():
     UPDATE
     -----------------------------------------------------------------'''
 
-    def update(self, count=100, time_end=cf.now()):
+    def update(self, count=100, time_end=cnf.now()):
             '''Get candles for the specified pair, timeframe from the
             specified exchange'''
 
@@ -198,7 +199,7 @@ class Bucket():
             time_begin = time_end-(self.timeframe_ms * count)
 
             # Get exchange client
-            exchange = ex(self.exchange_id)
+            exchange = exn.Exchange(self.exchange_id)
             client = exchange.client()
 
             # Fetch the OHLCV data from the exchange
@@ -223,12 +224,12 @@ class Bucket():
             # Add derived extra columns
             self.df_buckets['market_id'] = self.market_id
             self.df_buckets['timeframe_id'] = self.timeframe_id
-            self.df_buckets['time_updated'] = cf.now()
+            self.df_buckets['time_updated'] = cnf.now()
             self.df_buckets['time_open']=(self.df_buckets['time_close']
                                         - self.timeframe_ms)
 
             # Create 'temp_bucket' postgres database table with new data
-            self.df_buckets.to_sql('bucket_temp', con=ngn.get(),
+            self.df_buckets.to_sql('bucket_temp', con=ngn.Db.get(),
                                     if_exists="replace")
 
             # Merge the 'bucket_temp' with the 'bucket' postgres table
@@ -259,7 +260,7 @@ class Bucket():
                 ON CONFLICT (market_id, timeframe_id, time_close)
                     DO NOTHING;'''
 
-            con = ngn.get().connect()
+            con = ngn.Db.get().connect()
             con.execute(sql)
 
             return self.df_buckets
@@ -275,16 +276,16 @@ if __name__ == '__main__':
 
     import time
 
-    cp1 = cf.now()
+    cp1 = cnf.now()
     print('checkpoint: ', cp1)
 
     b = Bucket(market_id=1,timeframe_id=1)
-    cp2 = cf.now()
+    cp2 = cnf.now()
     print('done creating the bucket')
     print('checkpoint: ', cp2, cp2-cp1)
 
     g = b.update()
-    cp3 = cf.now()
+    cp3 = cnf.now()
     print('Done getting the data from the exchange')
     print('checkpoint: ', cp3, cp3-cp2)
 
@@ -293,7 +294,7 @@ if __name__ == '__main__':
     # r = b.read_between(count=50)
     # r = b.read_between(time_end=1542741540000, time_begin=1542740220000)
     r = b.read_all()
-    cp4 = cf.now()
+    cp4 = cnf.now()
     print('Done reading from the database')
     print('checkpoint: ', cp3, cp4-cp3)
     print(r)
