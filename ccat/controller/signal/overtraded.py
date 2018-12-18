@@ -55,37 +55,35 @@ class Overtraded:
 
     def __init__(
         self,
-        market_id = 1,
-        timeframe_id = 6,
-        len_rsi = 40,
-        col = 'price_close',
-        overbought = 92,
-        oversold = 32,
+        df_bucket:pd.DataFrame,
+        len_rsi:int,
+        overbought:int,
+        oversold:int,
+        peak:int,
+        trough:int,
+        col:str ='price_close'
         ):
 
-        self.market_id = market_id
-        self.timeframe_id = timeframe_id
+        # Instance variables
+        self.df_bucket = df_bucket
         self.len_rsi = len_rsi
-        self.col = col
         self.overbought = overbought
         self.oversold = oversold
+        self.peak = peak
+        self.trough = trough
+        self.col = col
 
-        # Create a bucket instance
-        self.bucket = bucket.Bucket(
-            market_id=market_id,
-            timeframe_id=timeframe_id)
+        # print('overbought: ', self.overbought)
+        # print('oversold: ', self.oversold)
+        # print('peak: ', self.peak)
+        # print('trough: ', self.trough)
 
 
-    def get(self, time_end: int = cnf.now()):
+    def get(self):
         '''Read candle data into a dataframe, calculate RSI values and
         return a pandas dataframe with columns;
             id, rsi, high, low, up, down
         '''
-
-        # Get the bucket data
-        self.df_bucket = self.bucket.read_until(
-            count=self.len_rsi*2,
-            time_end=time_end)
 
         # Calculate rsi(price_close)
         self.df_out = rsi.get(
@@ -95,89 +93,59 @@ class Overtraded:
             n = self.len_rsi,
             prefix = self.col)
 
+        # print('len_rsi:', self.len_rsi)
+
         # Get the name of the column with the RSI values
         n = self.df_out.columns[1]
 
-        # High
-        self.df_out['high'] = (
-            (self.df_out[n]>self.overbought) &
-            (self.df_out[n]<self.df_out[n].shift(1)))
+        # Long if rsi is below the trough line and increasing
+        self.df_out['long_trough'] = np.where(
+            (self.df_out[n] < self.trough) &
+            (self.df_out[n] > self.df_out[n].shift(1)), 1, 0)
 
-        # Low
-        self.df_out['low'] = (
-            (self.df_out[n]<self.oversold) &
-            (self.df_out[n]>self.df_out[n].shift(1)))
+        # Short if rsi is above the peak line and decreasing
+        self.df_out['short_peak'] = np.where(
+            (self.df_out[n] > self.peak), -1, 0)
 
-        # Up
-        self.df_out['up'] = (
-            (self.df_out[n]>self.oversold) &
-            (self.df_out[n].shift(1)< self.oversold))
+         # Long if rsi is below the oversold line and increasing
+        self.df_out['long_oversold'] = np.where(
+            (self.df_out[n] < self.oversold) &
+            (self.df_out[n] > self.df_out[n].shift(1)) &
+            (self.df_out[n] > self.df_out[n].shift(2)), 1, 0)
 
-        # Down
-        self.df_out['down'] = (
-            (self.df_out[n] < self.overbought) &
-            (self.df_out[n].shift(1) > self.overbought))
+        # Short if rsi is above the overbought line, and is decreasing
+        self.df_out['short_overbought'] = np.where(
+            (self.df_out[n] > self.overbought), -1, 0)
 
-        # rowcount 0:len_rsi have values based on insufficient data and
-        # are therefore removed
-        self.df_out = self.df_out.iloc[self.len_rsi:]
+        # # Short if rsi is above the peak line and decreasing
+        # self.df_out['short_peak'] = np.where(
+        #     (self.df_out[n] > self.peak) &
+        #     (self.df_out[n] < self.df_out[n].shift(1)),
+        #     -1, 0)
+
+        #  # Long if rsi is below the oversold line and increasing
+        # self.df_out['long_oversold'] = np.where(
+        #     (self.df_out[n] < self.oversold) &
+        #     (self.df_out[n] > self.df_out[n].shift(1)),
+        #     1, 0)
+
+        # # Short if rsi is above the overbought line, and is decreasing
+        # self.df_out['short_overbought'] = np.where(
+        #     (self.df_out[n] > self.overbought) &
+        #     (self.df_out[n] < self.df_out[n].shift(1)),
+        #     -1, 0)
+
+
+        # Compile signal
+        cols = [
+            'long_trough',
+            'long_oversold',
+            'short_peak',
+            'short_overbought']
+
+        self.df_out['signal_overtraded'] = self.df_out[cols].sum(axis=1)
 
         return self.df_out
-
-
-    def high(self, time_end=cnf.now()):
-        '''Returns a boolean indicating if the rsi has
-        topped out
-        '''
-        self.get(time_end=time_end)
-        return self.df_out.iloc[-1]['high']
-
-
-    def low(self, time_end=cnf.now()):
-        '''Returns a boolean indicating if the rsi has bottomed out
-        '''
-        self.get(time_end=time_end)
-        return self.df_out.iloc[-1]['low']
-
-
-    def up(self, time_end=cnf.now()):
-        '''Returns a boolean indicating if the rsi has crossed back
-        over the oversold threshold
-        '''
-        self.get(time_end=time_end)
-        return self.df_out.iloc[-1]['up']
-
-
-    def down(self, time_end=cnf.now()):
-        '''Returns a boolean indicating if the rsi has crossed back
-        under the overbought threshold
-        '''
-        self.get(time_end=time_end)
-        return self.df_out.iloc[-1]['down']
-
-
-    def signal(self, time_end=cnf.now()):
-        '''Returns just the signal. 1 for long, -1 for short and 0 for
-        do nothing
-        '''
-        self.get(time_end=time_end)
-
-        # High
-        if self.df_out.iloc[-1]['high']: signal = -1
-
-        # Down
-        elif self.df_out.iloc[-1]['down']: signal = -1
-
-        # Low
-        elif self.df_out.iloc[-1]['low']: signal = 1
-
-        # Up
-        elif self.df_out.iloc[-1]['up']: signal = 1
-
-        else: signal = 0
-
-        return signal
-
 
 
 '''
@@ -188,24 +156,32 @@ class Overtraded:
 
 if __name__ == '__main__':
 
+    # Variables
+    market_id = 1
+    timeframe_id = 6
+    time_end=cnf.now()
+    count = 500
+    len_rsi = 40
+    col = 'price_close'
+    overbought = 60
+    oversold = 40
+    peak = 92
+    trough = 32
+
+    # Read candle data
+    b= bucket.Bucket(market_id=market_id, timeframe_id=timeframe_id)
+    df_bucket = b.read_until(count = count, time_end = time_end)
+
     o = Overtraded(
-        market_id = 1,
-        timeframe_id = 4,
-        len_rsi = 40,
-        col = 'price_close',
-        overbought = 60,
-        oversold = 40)
+        df_bucket = df_bucket,
+        len_rsi = len_rsi,
+        overbought = overbought,
+        oversold = oversold,
+        peak = peak,
+        trough = trough,
+        col = col)
 
-    # print(o)
-
-    # print(o.signal(time_end=cnf.now()))
-    # print(o.get(time_end=cnf.now()))
-
-    print('high: ', o.high())
-    # print('low: ', o.low())
-    # print('up: ', o.up())
-    # print('down: ', o.down())
-
+    print(o.get())
 
 
 

@@ -25,6 +25,7 @@ import numpy as np
 from ccat import bucket
 from ccat import height
 from ccat import ema
+from ccat import sma
 from ccat import df_x_df
 from ccat import config as cnf
 
@@ -42,67 +43,59 @@ class Wix:
 
     def __init__(
         self,
-        market_id=1,
-        timeframe_id=6,
-        len_ema_top=40,
-        len_ema_bottom=40):
+        df_bucket:pd.DataFrame,
+        len_ma_top:int = 40,
+        len_ma_bottom:int = 40):
+
+        self.df_bucket = df_bucket
+        self.len_ma_top = len_ma_top
+        self.len_ma_bottom = len_ma_bottom
 
 
-        self.market_id = market_id
-        self.timeframe_id = timeframe_id
-        self.len_ema_top = len_ema_top
-        self.len_ema_bottom = len_ema_bottom
-        self.bucket = bucket.Bucket(market_id=market_id,timeframe_id=timeframe_id)
-
-
-    def get(self, time_end = cnf.now()):
+    def get(self):
         ''' If the top wick ema crosses over the bottom wick ema, return a
         1 (long), if the top wick crosses under the bottom wick ema, return
         a -1(short), otherwise return a 0 (do nothing)
         '''
 
-        self.df_bucket = self.bucket.read_until(count=500, time_end = time_end)
+        # Get the candle heights
         self.df_heights = height.get(self.df_bucket)
+        # print(self.df_heights)
 
         ## EMA: ema(df_heights)
         self.df_ema_top = ema.get(
             df_in=self.df_heights,
             id='id',
             data=self.df_heights.columns[3],
-            n = self.len_ema_top,
+            n = self.len_ma_top,
             prefix = self.df_heights.columns[3])
 
         self.df_ema_bottom = ema.get(
             df_in=self.df_heights,
             id='id',
             data=self.df_heights.columns[4],
-            n = self.len_ema_bottom,
+            n = self.len_ma_bottom,
             prefix = self.df_heights.columns[4])
 
-        self.df_in = df_x_df.get(
+        self.df_out = df_x_df.get(
             df_in_1 = self.df_ema_top,
             df_in_2 = self.df_ema_bottom,
             col_1 = self.df_ema_top.columns[1],
             col_2 = self.df_ema_bottom.columns[1])
 
-        # Initialize df_out dataframe
-        self.df_out = pd.DataFrame()
 
         # Calculate crossover
-        self.df_out['long'] = np.where(self.df_in.iloc[ :, 3], True, False)
-        self.df_out['short'] = np.where(self.df_in.iloc[ :, 4], True, False)
-        self.df_out['signal'] = np.where(self.df_in.iloc[ :, 3], 1, np.where(self.df_in.iloc[ :, 4], -1, 0))
+        self.df_out['long_wix'] = np.where(self.df_out.iloc[ :, 3], 1, 0)
+        self.df_out['short_wix'] = np.where(self.df_out.iloc[ :, 4], -1, 0)
+
+        cols = [
+            'long_wix',
+            'short_wix']
+
+        # Compiled signal
+        self.df_out['signal_wix'] = self.df_out[cols].sum(axis=1)
 
         return self.df_out
-
-
-    def signal(self, time_end = cnf.now()):
-
-        # Get the dataframe
-        self.get(time_end = cnf.now())
-
-        return self.df_out.iloc[-1]['signal']
-
 
 
 
@@ -114,12 +107,26 @@ class Wix:
 
 if __name__ == '__main__':
 
-    # Create Wix instance
-    w = Wix(market_id=1, timeframe_id=6, len_ema_top=40, len_ema_bottom=40)
+    # Variables
+    market_id = 1
+    timeframe_id = 6
+    time_end=cnf.now()
+    count = 500
+    len_ma_top = 10
+    len_ma_bottom = 10
 
-    # Get last signal
-    print(w.get(time_end = cnf.now()))
-    print(w.signal(time_end = cnf.now()))
+    # Read candle data
+    b= bucket.Bucket(market_id=market_id, timeframe_id=timeframe_id)
+    df_bucket = b.read_until(count = count, time_end = time_end)
+
+    # Create Wix instance
+    w = Wix(
+        df_bucket = df_bucket,
+        len_ma_top = len_ma_top,
+        len_ma_bottom = len_ma_bottom)
+
+    print(w.get())
+    # w.get()
 
 
 

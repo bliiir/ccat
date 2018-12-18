@@ -21,10 +21,10 @@ import numpy as np
 
 
 # Local application imports
-from ccat import bucket
+from ccat import config as cnf
 from ccat import height
 from ccat import ema
-from ccat import config as cnf
+
 
 
 '''
@@ -40,28 +40,15 @@ class Extreme:
 
     def __init__(
         self,
-        market_id=1,
-        timeframe_id=6,
-        len_ema_top=40,
-        len_ema_bottom=40):
+        df_bucket:pd.DataFrame,
+        len_ma_top:int,
+        len_ma_bottom:int):
 
+        # Instance variables
+        self.df_bucket = df_bucket
+        self.len_ma_top = len_ma_top
+        self.len_ma_bottom = len_ma_bottom
 
-        self.market_id = market_id
-        self.timeframe_id = timeframe_id
-        self.len_ema_top = len_ema_top
-        self.len_ema_bottom = len_ema_bottom
-
-        self.bucket = bucket.Bucket(
-            market_id=market_id,
-            timeframe_id=timeframe_id)
-
-
-    def buckets(self, time_end: int = cnf.now()):
-        '''Gets OHLCV data'''
-
-        self.df_bucket = self.bucket.read_until(
-            count = 500,
-            time_end = time_end)
 
     def features(self):
         '''Fetches the candle part heights
@@ -77,16 +64,16 @@ class Extreme:
         self.df_ema_top = ema.get(
             df_in=self.df_heights,
             id='id',
-            data=self.df_heights.columns[3],
-            n = self.len_ema_top,
+            data = self.df_heights.columns[3],
+            n = self.len_ma_top,
             prefix = self.df_heights.columns[3])
 
         # ema(wix_bottom)
         self.df_ema_bottom = ema.get(
-            df_in=self.df_heights,
+            df_in = self.df_heights,
             id='id',
-            data=self.df_heights.columns[4],
-            n = self.len_ema_bottom,
+            data= self.df_heights.columns[4],
+            n = self.len_ma_bottom,
             prefix = self.df_heights.columns[4])
 
 
@@ -94,16 +81,11 @@ class Extreme:
         ''' Merges the top and bottom wick ema's into a df_out dataframe
         '''
 
-        # Initialize df_out dataframe
-        self.df_out = pd.DataFrame()
-
         # Merge the two ema dataframes
         self.df_out = pd.merge(
             self.df_ema_top,
             self.df_ema_bottom,
-            how='left',
-            left_on='id',
-            right_on='id',)
+            on='id')
 
 
     def signals(self):
@@ -111,41 +93,46 @@ class Extreme:
         '''
 
         # Short names
-        c1 = self.df_out.columns[1]  # top wick ema
-        c2 = self.df_out.columns[2]  # bottom wick ema
+        tw = self.df_heights.columns[3]  # top wick
+        bw = self.df_heights.columns[4]  # bottom wick
+        twe = self.df_out.columns[1]  # top wick ema
+        bwe = self.df_out.columns[2]  # bottom wick ema
 
         # Set multipliers
-        m1 = 1.1  #1.34
-        m2 = 1.1  #1.34
-        m3 = 1.1  #1.3
-        m4 = 1.1  #1.2
+        m1 = 1.2
+        m2 = 1.2
+        m3 = 2 # 2.5
 
-        # Euphoria boolean column
-        self.df_out['euphoria'] = (
-            (self.df_out[c1] > self.df_out[c1].shift(1) * m1) &
-            (self.df_out[c1] > self.df_out[c1].shift(2) * m2) &
-            (self.df_out[c1] > self.df_out[c2]))
+        m4 = 1.34 # 1.2 1.5
+        m5 = 1.34 # 1.2 1.5
+        m6 = 2
 
-        # Dystopi boolean column
-        self.df_out['dystopia'] = (
-            (self.df_out[c2] > self.df_out[c2].shift(1) * m3) &
-            (self.df_out[c2] > self.df_out[c2].shift(2) * m4) &
-            (self.df_out[c2] > self.df_out[c1]))
+        # Long
 
-        # Add a signal column with -1 for short, 1 for long and 0 for
-        # no action
-        self.df_out['signal'] = np.where(
-            self.df_out['euphoria'], -1,
-            np.where(self.df_out['dystopia'], 1, 0))
+        self.df_out['long_extreme'] = np.where(
+            (self.df_out[bwe] > self.df_out[bwe].shift(1) * m1) &
+            (self.df_out[bwe] > self.df_out[bwe].shift(2) * m2),
+            1, 0)
+
+        # Short
+        self.df_out['short_extreme'] = np.where(
+            (self.df_out[bwe] > self.df_out[bwe].shift(1) * m4) &
+            (self.df_out[bwe] > self.df_out[bwe].shift(2) * m5), -1, 0)
+
+        cols = [
+            'long_extreme',
+            'short_extreme']
+
+        # Compiled signal
+        self.df_out['signal_extreme'] = self.df_out[cols].sum(axis=1)
 
 
-    def get(self, time_end: int = cnf.now()):
+    def get(self):
         '''Runs all the calculation methods in the class based on the
         specific market, timeframe and end-time
         '''
 
         # Run the setup
-        self.buckets(time_end=time_end)
         self.features()
         self.indicators()
         self.merge()
@@ -173,14 +160,32 @@ class Extreme:
 
 if __name__ == '__main__':
 
-    e = Extreme(
-        market_id=1,
-        timeframe_id=6,
-        len_ema_top=40,
-        len_ema_bottom=40)
+    from ccat import bucket
 
+    # Variables
+    market_id = 1
+    timeframe_id = 6
+
+    count = 500
+    time_end = cnf.now()
+
+    len_ma_top = 40
+    len_ma_bottom = 40
+
+
+    b= bucket.Bucket(market_id=market_id, timeframe_id=timeframe_id)
+    df_bucket = b.read_until(count = count, time_end = time_end)
+    # print(df_bucket)
+
+    e = Extreme(
+        df_bucket = df_bucket,
+        len_ma_top= len_ma_top,
+        len_ma_bottom= len_ma_bottom)
+
+    # print(e.get())
     print(e.get())
-    print(e.signal())
+
+
 
 
 
