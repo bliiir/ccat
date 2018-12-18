@@ -87,6 +87,8 @@ class Bucket():
     # Execute the read query
     def read_execute(self, query, sort_col, sort_dir):
 
+        #self.update() ###### REMOVE WHEN SUPERVISORD OR CRONJOB
+
         # Execute the query and store it in a pandas dataframe
         df_buckets = pd.read_sql(sql=query, con=ngn.Db.get())
 
@@ -100,14 +102,14 @@ class Bucket():
     def read_all(
         self,
         sort_col:str = 'time_close',
-        sort_dir:str = 'DESC'):
+        sort_dir:str = 'ASC'):
 
         query = f'\
             SELECT * \
             FROM bucket \
             WHERE market_id = {self.market_id} \
             AND timeframe_id = {self.timeframe_id} \
-            ORDER BY time_close DESC'
+            ORDER BY time_close ASC'
 
         return self.read_execute(query, sort_col, sort_dir)
 
@@ -117,7 +119,7 @@ class Bucket():
         time_begin: int = cnf.month_ago(),
         time_end: int = cnf.now(),
         sort_col: str = 'time_close',
-        sort_dir: str = 'DESC'):
+        sort_dir: str = 'ASC'):
 
         query = f'\
             SELECT * \
@@ -126,7 +128,7 @@ class Bucket():
             AND timeframe_id = {self.timeframe_id} \
             AND time_open >= {time_begin} \
             AND time_close <= {time_end} \
-            ORDER BY time_close DESC'
+            ORDER BY time_close ASC'
 
         return self.read_execute(query, sort_col, sort_dir)
 
@@ -135,14 +137,14 @@ class Bucket():
         self,
         count=100,
         sort_col:str = 'time_close',
-        sort_dir:str = 'DESC'):
+        sort_dir:str = 'ASC'):
 
         query = f'\
             SELECT * \
             FROM bucket \
             WHERE market_id = {self.market_id} \
             AND timeframe_id = {self.timeframe_id} \
-            ORDER BY time_close DESC \
+            ORDER BY time_close ASC \
             LIMIT {count}'
 
         return self.read_execute(query, sort_col, sort_dir)
@@ -153,7 +155,7 @@ class Bucket():
         time_begin=cnf.month_ago(),
         count=100,
         sort_col:str = 'time_close',
-        sort_dir:str = 'DESC'):
+        sort_dir:str = 'ASC'):
 
         query = f'\
             SELECT * \
@@ -172,7 +174,7 @@ class Bucket():
         time_end= cnf.now(),
         count=100,
         sort_col:str = 'time_close',
-        sort_dir:str = 'DESC'):
+        sort_dir:str = 'ASC'):
 
         query = f'\
             SELECT * \
@@ -180,7 +182,7 @@ class Bucket():
             WHERE market_id = {self.market_id} \
             AND timeframe_id = {self.timeframe_id} \
             AND time_close <= {time_end} \
-            ORDER BY time_close DESC \
+            ORDER BY time_close ASC \
             LIMIT {count}'
 
         return self.read_execute(query, sort_col, sort_dir)
