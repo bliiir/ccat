@@ -124,10 +124,10 @@ def get(df_in: pd.DataFrame) -> pd.DataFrame:
 
 if __name__ == '__main__':
 
-    from ccat import bucket as bct
+    from ccat import bucket
 
     # Get a bucket object from Bucket
-    b = bct.Bucket(market_id=1,timeframe_id=1)
+    b = bucket.Bucket(market_id=1,timeframe_id=1)
 
     # Update the table
     b.update()
