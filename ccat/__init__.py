@@ -37,10 +37,13 @@ import ccat.controller.indicator.rsi as rsi
 import ccat.controller.cross.df_x_df as df_x_df
 import ccat.controller.cross.df_x_val as df_x_val
 
-
+# Signals
+import ccat.controller.signal.wix as wix
+import ccat.controller.signal.overtraded as overtraded
+import ccat.controller.signal.extreme as extreme
 
 # # Strategies
-# #import ccat.controller.strategy.s_1542995464 as s2
+import ccat.controller.strategy.momentum as momentum
 
 # # Views
 # from ccat.view import report
