@@ -72,7 +72,7 @@ def get(
     df_out.set_index('id')
 
     # Assemble the column title
-    title = f'{prefix}_ema_{n}'
+    title = f'{prefix}_ema'
 
     # Calculate ema and store it in a column with title assembled above
     df_out[title]=df_in[data].ewm(span=n, adjust=False).mean()

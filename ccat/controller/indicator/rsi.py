@@ -69,7 +69,7 @@ def get(
     df_out.set_index('id')
 
     # Assemble the column title
-    title = f'{prefix}_rsi_{n}'
+    title = f'{prefix}_rsi'
 
     # Calculate difference between current and previous row. Drop NaN's
     delta = df_in[data].diff() #.dropna()

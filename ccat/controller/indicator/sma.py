@@ -72,7 +72,7 @@ def get(
     df_out.set_index('id')
 
     # Assemble the column title
-    title = f'{prefix}_sma_{n}'
+    title = f'{prefix}_sma'
     # print("this worked", title)
 
     # Calculate ema and store it in column with title assembled above
