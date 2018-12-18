@@ -112,13 +112,13 @@ def get(df_in_1, df_in_2, col_1:str, col_2:str):
     df_out[col_1] = df_in[col_1].copy()
     df_out[col_2] = df_in[col_2].copy()
 
-    df_out['crossover'] = ((df_in[col_1] > df_in[col_2]) &
+    df_out[f'crossover'] = ((df_in[col_1] > df_in[col_2]) &
         (df_in[col_1].shift(1) <= df_in[col_2].shift(1)))
 
-    df_out['crossunder'] = ((df_in[col_1] < df_in[col_2]) &
+    df_out[f'crossunder'] = ((df_in[col_1] < df_in[col_2]) &
         (df_in[col_1].shift(1) >= df_in[col_2].shift(1)))
 
-    df_out['cross'] = (df_out['crossover']) | df_out['crossunder']
+    df_out['cross'] = (df_out[f'crossover']) | df_out[f'crossunder']
 
     return df_out
 
