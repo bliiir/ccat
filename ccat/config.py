@@ -16,12 +16,13 @@ from math import floor
 '''
 
 # Database
-db_dialect = "postgresql"
-db_driver = "psycopg2"
-db_host = "localhost"
-db_name = "bit_002"
-db_user = os.environ["POSTGRES_UN"]
-db_password = os.environ['POSTGRES_PW']
+db_dialect = os.environ["DB_DIALECT"]
+db_driver = os.environ["DB_DRIVER"]
+db_host = os.environ["DB_HOST"]
+db_name = os.environ["DB_NAME"]
+db_user = os.environ["DB_UN"]
+db_password = os.environ['DB_PW']
+
 
 # Time
 def now():
