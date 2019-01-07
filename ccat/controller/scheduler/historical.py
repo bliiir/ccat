@@ -70,55 +70,79 @@ if __name__ == '__main__':
         8:2592000000 # 30d
         }
 
+
     # Dictionay of market_id's and their available timeframes. See above
     instruments = {1:(1,2,4,6)}
 
     # Set up logging
-    logging.basicConfig(filename=cf.lf_bucket_historical, level=logging.DEBUG)
+    logging.basicConfig(
+        filename=cf.lf_bucket_historical,
+        level=logging.INFO)
 
     # Set number of periods to look back each time
     count = 500
 
-    # Set starting end-date
-    time_end = cf.now()
+    # Set the final end-date
+    dt_stop = dt(2016, 1, 1)
+    ts_stop = dt_stop.timestamp() * 1000
 
-    # Do until we have all the candles available
-    while True:
+    # For each of the markets
+    for market_id, timeframe_ids in instruments.items():
 
-        # For each of the markets
-        for market_id, timeframe_ids in instruments.items():
+        # For each of the timeframes
+        for timeframe_id in timeframe_ids:
 
-            # For each of the timeframes
-            for timeframe_id in timeframe_ids:
+            # Set inital end-date for each cycle
+            ts_last = cf.now() # dt.now().timestamp()*1000
+            dt_last = dt.utcfromtimestamp(ts_last/1000)
+
+            while ts_last > ts_stop:
 
                 # Milisecond length for the timeframe
                 timeframe_ms = durations[timeframe_id]
 
                 # Set time_begin for the log
-                time_begin = time_end - count * timeframe_ms
+                ts_first = ts_last - (count * timeframe_ms)
+                dt_first = dt.utcfromtimestamp(ts_first/1000)
 
                 # Set the current time for the log
-                time_now = dt.strftime(dt.now(), "%Y.%M.%d %H:%M:%S")
+                ts_now = cf.now() # dt.now().timestamp()*1000
+                dt_now = dt.utcnow()
 
                 # Do the update for the given market and timeframe
-                # update(
-                #     market_id = market_id,
-                #     timeframe_id = timeframe_id,
-                #     time_end = time_end,
-                #     count = count)
+                update(
+                    market_id = market_id,
+                    timeframe_id = timeframe_id,
+                    time_end = ts_last,
+                    count = count)
 
                 # Log the event
-                logging.info(f'\
-                    host: {cf.db_host},\
-                    db: {cf.db_name},\
-                    market_id: {market_id},\
-                    timeframe_id: {timeframe_id},\
-                    time_end: {time_end},\
-                    time_begin: {time_begin},\
-                    time_now: {time_now} \n')
+                msg = (
+                    'host: {}, '
+                    'db: {}, '
+                    'market_id: {}, '
+                    'timeframe_id: {}, '
+                    'timeframe_ms: {}, '
+                    'time_first: {} - {}, '
+                    'time_last: {} - {}, '
+                    'time_now: {} - {}')
 
+                logging.info(msg.format(
+                        cf.db_host,
+                        cf.db_name,
+                        market_id,
+                        timeframe_id,
+                        timeframe_ms,
+                        ts_first,
+                        dt_first,
+                        ts_last,
+                        dt_last,
+                        ts_now,
+                        dt_now))
 
-        # Set end date to the begin date plus ten candles
-        time_end = time_begin + 10 * timeframe_ms
+                # time.sleep(1)
 
-        # I guess this should really be terminated in the code, but I will try to let it run and see what happens
+                # Set timestamp of last candle to timestamp of first
+                # candle of the last round
+                ts_last = ts_first + 10 * timeframe_ms
+                dt_last = dt.utcfromtimestamp(ts_last / 1000)
