@@ -7,6 +7,7 @@
 # Standard library imports
 import os
 import time
+import datetime
 from math import floor
 
 '''
@@ -16,16 +17,22 @@ from math import floor
 '''
 
 # Database
-db_dialect = "postgresql"
-db_driver = "psycopg2"
-db_host = "localhost"
-db_name = "bit_002"
-db_user = os.environ["POSTGRES_UN"]
-db_password = os.environ['POSTGRES_PW']
+db_dialect = os.environ["DB_DIALECT"]
+db_driver = os.environ["DB_DRIVER"]
+db_host = os.environ["DB_HOST"]
+db_name = os.environ["DB_NAME"]
+db_user = os.environ["DB_UN"]
+db_password = os.environ["DB_PW"]
+
+# log files
+lf_bucket_update = os.environ["LF_BUCKET_UPDATE"]
+lf_bucket_historical = os.environ["LF_BUCKET_HISTORICAL"]
+
+
 
 # Time
 def now():
-    return floor(time.time()*1000)
+    return floor((datetime.datetime.now().timestamp())*1000)
 
 def hour_ago():
     return now()-3600000
@@ -47,7 +54,10 @@ def month_ago():
 
 # Run if executed directly. Do not run it if import
 if __name__ == '__main__':
-    print(month_ago)
+    print('datetime.datetime: \t', now())
+    print('time.time: \t\t', time.time())
+    print('your tz: \t\t', datetime.datetime.fromtimestamp(now()/1000))
+    print('utc: \t\t\t', datetime.datetime.utcfromtimestamp(now()/1000))
 
 
 
