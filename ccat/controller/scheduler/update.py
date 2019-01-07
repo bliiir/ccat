@@ -37,7 +37,8 @@ def update(
 
     bucket.Bucket(
         market_id=market_id,
-        timeframe_id=timeframe_id).update(count=count, time_end=time_end)
+        timeframe_id=timeframe_id).update(count=count,
+            time_end=time_end)
 
 '''
 ------------------------------------------------------------------------
@@ -58,14 +59,19 @@ if __name__ == '__main__':
     count = int(sys.argv[3])
 
     # Do the update
-    update(market_id = market_id, timeframe_id = timeframe_id, count=count)
+    update(
+        market_id = market_id,
+        timeframe_id = timeframe_id,
+        count=count)
 
     # Log the event
-    logging.basicConfig(filename=cf.lf_bucket_update, level=logging.DEBUG) # /home/ubuntu/logs/bucket_update.log
-    # logging.info(f'{cf.db_host}, {cf.db_name}, updated @ {dt.strftime(dt.now(), "%Y.%M.%d %H:%M:%S")}')
+    logging.basicConfig(
+        filename=cf.lf_bucket_update,
+        level=logging.DEBUG)
 
     # Set the current time for the log
-    time_now = dt.strftime(dt.now(), "%Y.%M.%d %H:%M:%S")
+    utcnow = dt.utcnow()
+    time_now = dt.strftime(utcnow, "%Y.%m.%d %H:%M:%S")
 
     logging.info(f'\
         host: {cf.db_host}, \
@@ -73,4 +79,4 @@ if __name__ == '__main__':
         market_id: {market_id}, \
         timeframe_id: {timeframe_id}, \
         count: {count}, \
-        time_now: {time_now}')
+        time_now: {time_now} / {utcnow.timestamp()}')
