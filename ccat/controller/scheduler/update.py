@@ -34,6 +34,8 @@ def update(
     timeframe_id = 6,  # 1d
     time_end = cf.now(),
     count = 500):
+    '''Update the database with date from the given period'''
+
 
     bucket.Bucket(
         market_id=market_id,
