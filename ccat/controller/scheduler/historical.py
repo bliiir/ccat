@@ -35,6 +35,7 @@ def update(
     timeframe_id = 6,  # 1d
     time_end = cf.now(),
     count = 500):
+    '''Update the database with date from the given period'''
 
     bucket.Bucket(
         market_id=market_id,
@@ -51,11 +52,10 @@ if __name__ == '__main__':
     import sys
     import time
     import logging
-
     from datetime import datetime as dt
     from math import floor
 
-
+    # REPLACE
     # This section should be replaced with a lookup in the database
     # joining the exchange associated with the market_id with the
     # timeframes available for that exchange
@@ -71,7 +71,9 @@ if __name__ == '__main__':
         }
 
 
+    # REPLACE
     # Dictionay of market_id's and their available timeframes. See above
+    # Replace with a lookup in the database for valid timeframes
     instruments = {1:(1,2,4,6)}
 
     # Set up logging
@@ -139,8 +141,6 @@ if __name__ == '__main__':
                         dt_last,
                         ts_now,
                         dt_now))
-
-                # time.sleep(1)
 
                 # Set timestamp of last candle to timestamp of first
                 # candle of the last round
