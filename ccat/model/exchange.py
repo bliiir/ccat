@@ -21,7 +21,7 @@ import ccxt
 import psycopg2
 
 # Local application imports
-from ccat import engine as ngn
+from ccat import engine
 
 '''
 ------------------------------------------------------------------------- - - -
@@ -40,7 +40,7 @@ class Exchange():
 
         '''Read exchange data from the database'''
         query = f'SELECT * FROM exchange WHERE id={self.id}'
-        df = pd.read_sql(sql=query, con=ngn.Db.get())
+        df = pd.read_sql(sql=query, con=engine.Db.get())
 
         # Set the instance variables
         self.name = df.name
@@ -55,6 +55,7 @@ class Exchange():
         try:
             if self.id==3:
                 self.client = ccxt.bitmex({'apiKey': self.api_key, 'secret': self.api_secret})
+                self.client.enableRateLimit = True
                 return self.client
 
             ##### ADD MORE EXCHANGES HERE #####
@@ -81,7 +82,7 @@ if __name__ == '__main__':
     bitmex = e.client()
 
     # Fetch the 1h BTC candles
-    candles = bitmex.fetchOHLCV('BTC/USD', '1h', limit=100, since=bitmex.parse8601 ('2018-11-5T00:00:00Z'))
+    candles = bitmex.fetchOHLCV('BTC/USD', '1h', limit=500, since=bitmex.parse8601 ('2018-11-5T00:00:00Z'))
 
     df = pd.DataFrame(candles)
     df.columns = ['time_close', 'price_open', 'price_high', 'price_low', 'price_close', 'volume' ]
