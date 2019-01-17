@@ -44,30 +44,31 @@ class Bucket():
         self.market_id = market_id
         self.timeframe_id = timeframe_id
 
-
         # Get attributes from the instrument view
         sql = f'''SELECT * FROM instrument
                             WHERE market_id={self.market_id}'''
 
-        self.df_instr = pd.read_sql(sql=sql, con=ngn.Db.get())
+        self.df_instrument = pd.read_sql(sql=sql, con=ngn.Db.get())
 
-        self.market_id = self.df_instr.market_id[0]
-        self.market_symbol_native = self.df_instr.market_symbol_native[0]
-        self.market_symbol_ccxt = self.df_instr.market_symbol_ccxt[0]
-        self.market_description = self.df_instr.market_description[0]
+        # Should not be needed because self.market_id is passed as an
+        # argument
+        # self.market_id = self.df_instrument.market_id[0]
+        self.market_symbol_native = self.df_instrument.market_symbol_native[0]
+        self.market_symbol_ccxt = self.df_instrument.market_symbol_ccxt[0]
+        self.market_description = self.df_instrument.market_description[0]
 
-        self.exchange_id = self.df_instr.exchange_id[0]
-        self.exchange_name = self.df_instr.exchange_name[0]
+        self.exchange_id = self.df_instrument.exchange_id[0]
+        self.exchange_name = self.df_instrument.exchange_name[0]
 
-        self.pair_id = self.df_instr.pair_id[0]
+        self.pair_id = self.df_instrument.pair_id[0]
 
-        self.asset_base_id = self.df_instr.asset_base_id[0]
-        self.asset_base_ticker = self.df_instr.asset_base_ticker[0]
-        self.asset_base_name = self.df_instr.asset_base_name[0]
+        self.asset_base_id = self.df_instrument.asset_base_id[0]
+        self.asset_base_ticker = self.df_instrument.asset_base_ticker[0]
+        self.asset_base_name = self.df_instrument.asset_base_name[0]
 
-        self.asset_quote_id = self.df_instr.asset_quote_id[0]
-        self.asset_quote_ticker = self.df_instr.asset_quote_ticker[0]
-        self.asset_quote_name = self.df_instr.asset_quote_name[0]
+        self.asset_quote_id = self.df_instrument.asset_quote_id[0]
+        self.asset_quote_ticker = self.df_instrument.asset_quote_ticker[0]
+        self.asset_quote_name = self.df_instrument.asset_quote_name[0]
 
 
         # Get the attributes from the timeframe table
@@ -193,12 +194,13 @@ class Bucket():
     UPDATE
     -----------------------------------------------------------------'''
 
-    def update(self, count=100, time_end=cnf.now()):
+    def update(self, count=100, time_end=cnf.now(), time_begin=None):
             '''Get candles for the specified pair, timeframe from the
             specified exchange'''
 
-            # Set the start of the date range to the end
-            time_begin = time_end-(self.timeframe_ms * count)
+            if time_begin == None:
+                # Set the start of the date range to the end
+                time_begin = time_end-(self.timeframe_ms * count)
 
             # Get exchange client
             exchange = exn.Exchange(self.exchange_id)
@@ -233,6 +235,13 @@ class Bucket():
             # Create 'temp_bucket' postgres database table with new data
             self.df_buckets.to_sql('bucket_temp', con=ngn.Db.get(),
                                     if_exists="replace")
+
+            # Insert the df_buckets dataframe into the bucket table
+            # ngn.DB.execute()
+
+            # Create a temporary table
+            # write data to the table
+            # Drop the temporary table
 
             # Merge the 'bucket_temp' with the 'bucket' postgres table
             sql = '''
