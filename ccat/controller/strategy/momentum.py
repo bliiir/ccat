@@ -172,9 +172,9 @@ if __name__ == '__main__':
 
     # Create a momentum strategy for the 1d BTCUSD candles on Bitmex
 
-    # Set kwarg variables
-    market_id = 1
-    timeframe_id = 6
+    # Settings
+    market_id = 1 # Bitmex
+    timeframe_id = 6 # 1d
 
     time_end = cnf.now()
     count = 500
@@ -194,8 +194,13 @@ if __name__ == '__main__':
 
     col = 'price_close'
 
-
+    # Get a bucket object from Bucket
     b = bucket.Bucket(market_id=market_id, timeframe_id=timeframe_id)
+
+    # Update the table
+    b.update()
+
+    # Get a dataframe with all the data for the market and timeframe
     df_bucket = b.read_until(count = count, time_end = time_end)
 
     m = Momentum(
