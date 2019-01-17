@@ -14,6 +14,7 @@ data from the exchanges, executing orders, getting balances etc
 
 # Standard library imports
 import json
+import os
 
 # Third party imports
 import pandas as pd
@@ -44,8 +45,8 @@ class Exchange():
 
         # Set the instance variables
         self.name = df.name
-        self.api_key = df.api_key
-        self.api_secret = df.api_secret
+        self.api_key = os.environ[df.api_key[0]]
+        self.api_secret = os.environ[df.api_secret[0]]
 
 
     # Create an exchange client for the exchange corresponding to the exchange_id
