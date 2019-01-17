@@ -22,16 +22,12 @@ db_driver = os.environ["DB_DRIVER"]
 db_host = os.environ["DB_HOST"]
 db_name = os.environ["DB_NAME"]
 db_user = os.environ["DB_UN"]
-<<<<<<< HEAD
 db_password = os.environ['DB_PW']
-=======
 db_password = os.environ["DB_PW"]
 
 # log files
 lf_bucket_update = os.environ["LF_BUCKET_UPDATE"]
 lf_bucket_historical = os.environ["LF_BUCKET_HISTORICAL"]
-
->>>>>>> 1c1db143f60c682b728bba8e498059dcb9e0c778
 
 
 # Time
