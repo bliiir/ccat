@@ -3,6 +3,9 @@
     HISTORICAL.PY
 ------------------------------------------------------------------------
 Populate the bucket table in the database with historical data
+
+NOT READY
+
 '''
 
 
@@ -74,7 +77,10 @@ if __name__ == '__main__':
     # REPLACE
     # Dictionay of market_id's and their available timeframes. See above
     # Replace with a lookup in the database for valid timeframes
-    instruments = {1:(1,2,4,6)}
+    # Get the timeframes in order from longest to shortest as the
+    # shortest will naturally take longer to finalize and block all the
+    # others
+    instruments = {1:(6,4,2,1)}
 
     # Set up logging
     logging.basicConfig(
@@ -111,38 +117,48 @@ if __name__ == '__main__':
                 ts_now = cf.now() # dt.now().timestamp()*1000
                 dt_now = dt.utcnow()
 
-                # Do the update for the given market and timeframe
-                update(
-                    market_id = market_id,
-                    timeframe_id = timeframe_id,
-                    time_end = ts_last,
-                    count = count)
 
-                # Log the event
-                msg = (
-                    'host: {}, '
-                    'db: {}, '
-                    'market_id: {}, '
-                    'timeframe_id: {}, '
-                    'timeframe_ms: {}, '
-                    'time_first: {} - {}, '
-                    'time_last: {} - {}, '
-                    'time_now: {} - {}')
+                try:
+                    # Do the update for the given market and timeframe
+                    update(
+                        market_id = market_id,
+                        timeframe_id = timeframe_id,
+                        time_end = ts_last,
+                        count = count)
 
-                logging.info(msg.format(
-                        cf.db_host,
-                        cf.db_name,
-                        market_id,
-                        timeframe_id,
-                        timeframe_ms,
-                        ts_first,
-                        dt_first,
-                        ts_last,
-                        dt_last,
-                        ts_now,
-                        dt_now))
+                    # Log the event
+                    msg = (
+                        'host: {}, '
+                        'db: {}, '
+                        'market_id: {}, '
+                        'timeframe_id: {}, '
+                        'timeframe_ms: {}, '
+                        'time_first: {} - {}, '
+                        'time_last: {} - {}, '
+                        'time_now: {} - {}')
 
-                # Set timestamp of last candle to timestamp of first
-                # candle of the last round
-                ts_last = ts_first + 10 * timeframe_ms
-                dt_last = dt.utcfromtimestamp(ts_last / 1000)
+                    logging.info(msg.format(
+                            cf.db_host,
+                            cf.db_name,
+                            market_id,
+                            timeframe_id,
+                            timeframe_ms,
+                            ts_first,
+                            dt_first,
+                            ts_last,
+                            dt_last,
+                            ts_now,
+                            dt_now))
+
+                    # Set timestamp of last candle to timestamp of first
+                    # candle of the last round
+                    ts_last = ts_first + 10 * timeframe_ms
+                    dt_last = dt.utcfromtimestamp(ts_last / 1000)
+
+                except:
+                    e = sys.exc_info()[0]
+                    logging.error(e)
+                    continue
+
+            # Sleep one second to avoid getting rate limited
+            time.sleep(1)

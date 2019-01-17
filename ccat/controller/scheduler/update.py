@@ -3,6 +3,9 @@
     UPDATE.PY
 ------------------------------------------------------------------------
 Updates the database with exchange data for a given market and timeframe
+
+NOT READY
+
 '''
 
 
@@ -74,6 +77,8 @@ if __name__ == '__main__':
     # Set the current time for the log
     utcnow = dt.utcnow()
     time_now = dt.strftime(utcnow, "%Y.%m.%d %H:%M:%S")
+
+    loggin.info
 
     logging.info(f'\
         host: {cf.db_host}, \
