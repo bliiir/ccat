@@ -14,15 +14,21 @@ I/O interface layer for the 'bucket' table in the database.
 '''
 
 # Standard library imports
-pass
+# import pdb
 
 # Third party imports
 import pandas as pd
 
+
 # Local application imports
-from ccat import config as cnf
-from ccat import exchange as exn
-from ccat import engine as ngn
+from ccat import config
+
+from ccat.model.database.market import Market
+from ccat.model.database.timeframe import Timeframe
+from ccat.model.database.client import Client
+
+from ccat.model.exchange.exchange import Exchange
+
 
 
 '''
@@ -40,45 +46,27 @@ class Bucket():
     -----------------------------------------------------------------'''
     def __init__(self, market_id, timeframe_id):
 
-        # Args
+        # Set instance attributes
         self.market_id = market_id
         self.timeframe_id = timeframe_id
 
-        # Get attributes from the instrument view
-        sql = f'''SELECT * FROM instrument
-                            WHERE market_id={self.market_id}'''
+        # Get market attributes from market table
+        market = Market(self.market_id).get()
 
-        self.df_instrument = pd.read_sql(sql=sql, con=ngn.Db.get())
+        self.market_symbol_native = my_market.symbol_native
+        self.market_symbol_ccxt = my_market.symbol_ccxt
+        self.market_description = my_market.description
+        self.exchange_id = my_market.exchange_id
+        self.pair_id = my_market.pair_id
 
-        # Should not be needed because self.market_id is passed as an
-        # argument
-        # self.market_id = self.df_instrument.market_id[0]
-        self.market_symbol_native = self.df_instrument.market_symbol_native[0]
-        self.market_symbol_ccxt = self.df_instrument.market_symbol_ccxt[0]
-        self.market_description = self.df_instrument.market_description[0]
+        # Get timeframe attributes from timeframe table
+        timeframe = Timeframe(self.timeframe_id)
 
-        self.exchange_id = self.df_instrument.exchange_id[0]
-        self.exchange_name = self.df_instrument.exchange_name[0]
+        self.timeframe_name = timeframe.name
+        self.timeframe_ms = timeframe.ms
 
-        self.pair_id = self.df_instrument.pair_id[0]
-
-        self.asset_base_id = self.df_instrument.asset_base_id[0]
-        self.asset_base_ticker = self.df_instrument.asset_base_ticker[0]
-        self.asset_base_name = self.df_instrument.asset_base_name[0]
-
-        self.asset_quote_id = self.df_instrument.asset_quote_id[0]
-        self.asset_quote_ticker = self.df_instrument.asset_quote_ticker[0]
-        self.asset_quote_name = self.df_instrument.asset_quote_name[0]
-
-
-        # Get the attributes from the timeframe table
-        sql = f'SELECT * FROM timeframe \
-                WHERE id={self.timeframe_id}'
-
-        self.df_timeframe = pd.read_sql(sql=sql, con=ngn.Db.get())
-
-        self.timeframe_name = self.df_timeframe.name[0]
-        self.timeframe_ms = self.df_timeframe.milliseconds[0]
+        # Get a database client
+        self.db_client = Client.get()
 
 
     '''-----------------------------------------------------------------
@@ -91,7 +79,7 @@ class Bucket():
         #self.update() ###### REMOVE WHEN SUPERVISORD OR CRONJOB
 
         # Execute the query and store it in a pandas dataframe
-        df_buckets = pd.read_sql(sql=query, con=ngn.Db.get())
+        df_buckets = pd.read_sql(sql=query, con=self.db_client)
 
         # Sort by sort_col and direction
         df_buckets = df_buckets.sort_values(by=[sort_col],
@@ -117,8 +105,8 @@ class Bucket():
 
     def read_between(
         self,
-        time_begin: int = cnf.month_ago(),
-        time_end: int = cnf.now(),
+        time_begin: int = config.month_ago(),
+        time_end: int = config.now(),
         sort_col: str = 'time_close',
         sort_dir: str = 'ASC'):
 
@@ -153,7 +141,7 @@ class Bucket():
 
     def read_from(
         self,
-        time_begin=cnf.month_ago(),
+        time_begin=config.month_ago(),
         count=100,
         sort_col:str = 'time_close',
         sort_dir:str = 'ASC'):
@@ -172,7 +160,7 @@ class Bucket():
 
     def read_until(
         self,
-        time_end= cnf.now(),
+        time_end= config.now(),
         count=100,
         sort_col:str = 'time_close',
         sort_dir:str = 'ASC'):
@@ -194,7 +182,7 @@ class Bucket():
     UPDATE
     -----------------------------------------------------------------'''
 
-    def update(self, count=100, time_end=cnf.now(), time_begin=None):
+    def update(self, count=100, time_end=config.now(), time_begin=None):
             '''Get candles for the specified pair, timeframe from the
             specified exchange'''
 
@@ -202,12 +190,19 @@ class Bucket():
                 # Set the start of the date range to the end
                 time_begin = time_end-(self.timeframe_ms * count)
 
-            # Get exchange client
-            exchange = exn.Exchange(self.exchange_id)
-            client = exchange.client()
+            # Load the market info
+            market = Market(market_id=self.market_id)
+            exchange_id = market.get_exchange_id()
+
+            # Get exchange instance
+            exchange = Exchange(exchange_id = exchange_id)
+
+            # Get an exchange client
+            exchange_client = exchange.client()
+
 
             # Fetch the OHLCV data from the exchange
-            self.buckets = client.fetch_ohlcv(
+            self.buckets = exchange_client.fetch_ohlcv(
                 symbol= self.market_symbol_ccxt,
                 timeframe= self.timeframe_name,
                 limit=count,
@@ -228,12 +223,12 @@ class Bucket():
             # Add derived extra columns
             self.df_buckets['market_id'] = self.market_id
             self.df_buckets['timeframe_id'] = self.timeframe_id
-            self.df_buckets['time_updated'] = cnf.now()
+            self.df_buckets['time_updated'] = config.now()
             self.df_buckets['time_open']=(self.df_buckets['time_close']
                                         - self.timeframe_ms)
 
             # Create 'temp_bucket' postgres database table with new data
-            self.df_buckets.to_sql('bucket_temp', con=ngn.Db.get(),
+            self.df_buckets.to_sql('bucket_temp', con=self.db_client,
                                     if_exists="replace")
 
             # Insert the df_buckets dataframe into the bucket table
@@ -271,7 +266,7 @@ class Bucket():
                 ON CONFLICT (market_id, timeframe_id, time_close)
                     DO NOTHING;'''
 
-            con = ngn.Db.get().connect()
+            con = self.db_client.connect()
             con.execute(sql)
 
             return self.df_buckets
@@ -279,36 +274,54 @@ class Bucket():
 
 '''
 ------------------------------------------------------------------------
-    __MAIN__
+    UNITTEST
+------------------------------------------------------------------------
+'''
+# https://docs.python.org/3.7/library/unittest.html#module-unittest
+
+import unittest
+
+class Test_Bucket(unittest.TestCase):
+
+    def setUp(self):
+
+        self.market_id = 1
+        self.timeframe_id = 1
+
+        self.bucket = Bucket(
+            market_id=self.market_id,
+            timeframe_id=self.timeframe_id)
+
+
+    def test_bucket_instantiation(self):
+        self.assertEqual(self.bucket.market_id, self.market_id)
+
+
+    def test_bucket_update(self):
+        self.buckets = self.bucket.update()
+        print('UPDATE: ', self.buckets)
+        self.assertIsNotNone(self.buckets)
+
+    def test_bucket_update_length(self):
+        self.buckets = self.bucket.update(count=25)
+        print('LENGTH: ', self.buckets)
+        self.assertEqual(len(self.buckets), 25)
+
+
+    def test_bucket_read_all(self):
+        self.all = self.bucket.read_all()
+        print('READ ALL: ', self.all)
+        self.assertIsNotNone(self.all)
+
+
+
+'''
+------------------------------------------------------------------------
+    MAIN
 ------------------------------------------------------------------------
 '''
 
 if __name__ == '__main__':
 
-    import time
-
-    cp1 = cnf.now()
-    print('checkpoint: ', cp1)
-
-    b = Bucket(market_id=1,timeframe_id=1)
-    cp2 = cnf.now()
-    print('done creating the bucket')
-    print('checkpoint: ', cp2, cp2-cp1)
-
-    g = b.update()
-    cp3 = cnf.now()
-    print('Done getting the data from the exchange')
-    print('checkpoint: ', cp3, cp3-cp2)
-
-    time.sleep(1)
-
-    # r = b.read_between(count=50)
-    # r = b.read_between(time_end=1542741540000, time_begin=1542740220000)
-    r = b.read_all()
-    cp4 = cnf.now()
-    print('Done reading from the database')
-    print('checkpoint: ', cp3, cp4-cp3)
-    print(r)
-
-
-
+    unittest.main()
+    # pass
