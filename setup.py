@@ -9,12 +9,12 @@ setup(
     #author_email='hemmeligholte@gmail.com',
     license='MIT',
     packages=find_packages(),
-    install_requires=[
-          'ccxt',
-          'pandas',
-          'numpy',
-          'psycopg2-binary',
-          'SQLAlchemy'
-      ],
+    # install_requires=[
+    #       'ccxt',
+    #       'pandas',
+    #       'numpy',
+    #       'psycopg2-binary',
+    #       'SQLAlchemy'
+    # ],
     zip_safe=False
     )
