@@ -88,7 +88,7 @@ Executes trades using the following abstract functions mirroring the same method
 
 | File | Status | Purpose |
 | :-- | :-- | :-- |
-| order.py | not started | Place a order on the exchange |
+| order.py | not started | Place an order on the exchange |
 | stop_loss.py | not started | Stop loss monitor that executes an order when conditions are met |
 | take_profit.py | not started | Take-profit monitor that executes an order when conditions are met |
 | trailing_stop.py | not started | Monitor that executes an order when conditions are met |
