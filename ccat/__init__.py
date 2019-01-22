@@ -10,13 +10,29 @@ name = 'ccat'
 
 '''
 ------------------------------------------------------------------------
+    ROOT
+------------------------------------------------------------------------
+'''
+import ccat.config as config
+
+
+'''
+------------------------------------------------------------------------
     MODEL
 ------------------------------------------------------------------------
 '''
 
-import ccat.model.engine as engine
-import ccat.model.exchange as exchange
-import ccat.model.bucket as bucket
+# import ccat.model.exchange.exchange as exchange
+# import ccat.model.exchange.order as order
+
+import ccat.model.database.client as client
+import ccat.model.database.bucket as bucket
+import ccat.model.database.market as market
+import ccat.model.database.timeframe as timeframe
+import ccat.model.database.instrument as instrument
+
+
+
 
 '''
 ------------------------------------------------------------------------
