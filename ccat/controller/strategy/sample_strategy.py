@@ -14,7 +14,7 @@ executor
 '''
 
 # Standard library imports
-from datetime import datetime as dt
+pass
 
 # Third party imports
 import pandas as pd
@@ -25,6 +25,9 @@ import numpy as np
 from ccat import wix
 from ccat import overtraded
 from ccat import extreme
+# from ccat import height
+# from ccat import ema
+# from ccat import df_x_df
 
 
 
@@ -154,140 +157,74 @@ class Momentum:
 
         self.merge()
 
-        self.df_signals = pd.merge(self.df_bucket, self.df_out, on='id')
-
-        return self.df_signals[[
-            'id',
-            'time_close',
-            'price_close',
-            'signal']]
-
-
-    def signal(self):
-        '''Gets the most recent signal'''
-
-        # Trigger the chain
-        self.signals()
-        self.signal = int(self.df_out.iloc[-1]['signal'])
-        # print("inside the signal method: ", self.df_out.iloc[-1])
-
-        return self.signal
-
+        return self.df_out
 
 '''
 ------------------------------------------------------------------------
-    UNITTEST
-------------------------------------------------------------------------
-'''
-
-import unittest
-from ccat import config
-from ccat.model.database.bucket import Bucket
-
-class Test_strategy(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(cls):
-
-        # Settings
-        cls.market_id = 1 # Bitmex
-        cls.timeframe_id = 6 # 1d
-
-        cls.count = 500
-        cls.time_end = config.now()
-
-        cls.len_ma_top_wix = 40
-        cls.len_ma_bottom_wix = 40
-
-        cls.len_ma_top_Extreme = 40
-        cls.len_ma_bottom_Extreme = 40
-
-        cls.len_rsi = 40
-
-        cls.overbought = 60
-        cls.oversold = 40
-        cls.peak = 92
-        cls.trough = 32
-
-        cls.col = 'price_close'
-
-        # Get a bucket object from Bucket
-        cls.bucket = Bucket(
-            market_id=cls.market_id,
-            timeframe_id=cls.timeframe_id)
-
-        # Update the table
-        # bucket.update()
-
-        # Get a dataframe with all the data for the market and timeframe
-        cls.df_bucket = cls.bucket.read_until(
-            count = cls.count,
-            time_end = cls.time_end)
-
-        # Instantiate the strategy
-        cls.strategy = Momentum(
-            df_bucket = cls.df_bucket,
-            len_ma_top_wix=cls.len_ma_top_wix,
-            len_ma_bottom_wix=cls.len_ma_bottom_wix,
-            len_ma_top_Extreme=cls.len_ma_top_Extreme,
-            len_ma_bottom_Extreme=cls.len_ma_bottom_Extreme,
-            len_rsi=cls.len_rsi,
-            overbought=cls.overbought,
-            oversold=cls.oversold,
-            peak=cls.peak,
-            trough=cls.trough,
-            col=cls.col)
-
-
-        # Create a momentum strategy for the 1d BTCUSD candles on Bitmex
-
-
-
-    # Setup
-    def setUp(self):
-        pass
-
-
-    def test_get_signals(self):
-
-        # Get the signals dataframe
-        self.df_signals = self.strategy.signals()
-
-        # Test that it is not empty
-        self.assertIsNotNone(self.df_signals)
-
-        # Test that it is a dataframe
-        self.assertIsInstance(self.df_signals, pd.DataFrame)
-
-        # Test that it is has the correct length
-        self.assertEqual(len(self.df_signals), 500)
-
-
-    def test_get_signal(self):
-
-        # Get the signal integer
-        self.signal = self.strategy.signal()
-
-        # Test that it is not empty
-        self.assertIsNotNone(self.signal)
-
-        # Test that it is an integer
-        self.assertIsInstance(self.signal, int)
-
-        # Test that it is a valid signal
-        self.assertIn(self.signal, [-1, 0, 1])
-
-
-
-'''
-------------------------------------------------------------------------
-    MAIN
+    __MAIN__
 ------------------------------------------------------------------------
 '''
 
 if __name__ == '__main__':
 
-    unittest.main()
+    from ccat import config as cnf
+    from ccat import bucket
+
+    # Create a momentum strategy for the 1d BTCUSD candles on Bitmex
+
+    # Settings
+    market_id = 1 # Bitmex
+    timeframe_id = 6 # 1d
+
+    time_end = cnf.now()
+    count = 500
+
+    len_ma_top_wix = 40
+    len_ma_bottom_wix = 40
+
+    len_ma_top_Extreme = 40
+    len_ma_bottom_Extreme = 40
+
+    len_rsi = 40
+
+    overbought = 60
+    oversold = 40
+    peak = 92
+    trough = 32
+
+    col = 'price_close'
+
+    # Get a bucket object from Bucket
+    b = bucket.Bucket(market_id=market_id, timeframe_id=timeframe_id)
+
+    # Update the table
+    b.update()
+
+    # Get a dataframe with all the data for the market and timeframe
+    df_bucket = b.read_until(count = count, time_end = time_end)
+
+    m = Momentum(
+        df_bucket = df_bucket,
+        len_ma_top_wix=len_ma_top_wix,
+        len_ma_bottom_wix=len_ma_bottom_wix,
+        len_ma_top_Extreme=len_ma_top_Extreme,
+        len_ma_bottom_Extreme=len_ma_bottom_Extreme,
+        len_rsi=len_rsi,
+        overbought=overbought,
+        oversold=oversold,
+        peak=peak,
+        trough=trough,
+        col=col)
+
+    df_signal = m.signals()
+    df_s = df_signal[['id', 'signal']]
+    df_b = df_bucket[['id', 'time_close', 'price_close']]
+    # print(df_s)
+
+    df_out = pd.merge(df_b, df_s, on='id')
+
+    print(df_out)
+
 
 
 

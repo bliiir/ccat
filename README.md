@@ -1,4 +1,5 @@
 # Crypto Currency Auto Trader
+Last updated: (2019, 01, 25)
 
 #### URLS
 
@@ -16,11 +17,22 @@
 ### model
 Modules for doing I/O operations on the platform. Classes, methods and functions to aqcuire, store and retreive data from exchange api's, the Postgres database etc.
 
+#### database
+Home-made interaction layer with the database - ORM would be too big a word, but sort of like it
+
+| File | Status | Purpose |
+| :-- | :-- | :-- |
+| client.py | current | The database connection. Uses SQLalchemy so can be most popular databases |
+| bucket.py | current | The candle data connection |
+
+#### exchange
+
 | File | Status | Purpose |
 | :-- | :-- | :-- |
 | engine.py | current | The database connection |
 | exchange.py | current | The Exchange connection |
 | bucket.py | current | The candle data connection |
+
 
 ---
 

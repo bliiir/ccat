@@ -53,11 +53,11 @@ class Bucket():
         # Get market attributes from market table
         market = Market(self.market_id).get()
 
-        self.market_symbol_native = my_market.symbol_native
-        self.market_symbol_ccxt = my_market.symbol_ccxt
-        self.market_description = my_market.description
-        self.exchange_id = my_market.exchange_id
-        self.pair_id = my_market.pair_id
+        self.market_symbol_native = market.symbol_native
+        self.market_symbol_ccxt = market.symbol_ccxt
+        self.market_description = market.description
+        self.exchange_id = market.exchange_id
+        self.pair_id = market.pair_id
 
         # Get timeframe attributes from timeframe table
         timeframe = Timeframe(self.timeframe_id)
