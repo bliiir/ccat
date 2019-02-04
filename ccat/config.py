@@ -23,7 +23,6 @@ db_host = os.environ["DB_HOST"]
 db_name = os.environ["DB_NAME"]
 db_user = os.environ["DB_UN"]
 db_password = os.environ['DB_PW']
-db_password = os.environ["DB_PW"]
 
 # log files
 lf_bucket_update = os.environ["LF_BUCKET_UPDATE"]
@@ -58,6 +57,9 @@ import unittest
 class Test_market(unittest.TestCase):
 
     def setUp(self):
+        pass
+
+    def test_environment_variables(self):
         pass
 
     def test_now(self):
