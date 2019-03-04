@@ -35,7 +35,8 @@ def get(
     id:str = 'id',
     data:str = 'data',
     n:int = 14,
-    prefix:str = '') -> pd.DataFrame:
+    prefix:str = '',
+    full:bool = False) -> pd.DataFrame:
 
     '''Calculates the relative strength index (RSI) of a given number of
     rows (n) in a given dataframe (df) for the column 'data', adds the
@@ -63,10 +64,11 @@ def get(
     df_out = pd.DataFrame()
 
     # Copy id column from incoming dataframe to outgoing dataframe
-    df_out['id']= df_in['id']
+    # df_out['id']= df_in['id']
+    df_out = df_in.copy()
 
     # Set the df index to the id column
-    df_out.set_index('id')
+    # df_out.set_index('id', inplace=True)
 
     # Assemble the column title
     title = f'{prefix}_rsi'
@@ -102,39 +104,11 @@ def get(
 
     df_out[title] = rsi
 
-    return df_out
+    # print('\nNAMES: ', df_out.columns.values)
+    # print('\nCONTENT: ', df_out[['id','price_close_rsi']])
 
 
-'''
-------------------------------------------------------------------------
-    __MAIN__
-------------------------------------------------------------------------
-'''
-
-# See if it works
-if __name__ == '__main__':
-
-    # imports
-    from ccat import bucket
-    from ccat import height
-
-    # Get a bucket object from Bucket
-    b = bucket.Bucket(market_id=1,timeframe_id=1)
-
-    # Update the table
-    b.update()
-
-    # Get a dataframe with all the data for the market and timeframe
-    df_in = b.read_all()
-
-    # Calculate the wicks
-    df_height = height.get(df_in)
-
-    # Calculate price_close rsi
-    my_rsi = get(
-        df_in=df_in, id='id',
-        data='price_close',
-        n=12,
-        prefix='price_close')
-
-    print(my_rsi)
+    if full == True:
+        return df_out
+    else:
+        return df_out[['id',title]]

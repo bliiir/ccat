@@ -69,7 +69,7 @@ def get(
     df_out['id']= df_in['id']
 
     # Set the df index to the id column
-    df_out.set_index('id')
+    # df_out.set_index('id', inplace=True)
 
     # Assemble the column title
     title = f'{prefix}_sma'
@@ -79,39 +79,3 @@ def get(
     df_out[title]=df_in[data].rolling(window=n).mean()
 
     return df_out
-
-
-
-'''
-------------------------------------------------------------------------
-    __MAIN__
-------------------------------------------------------------------------
-'''
-
-# See if it works
-if __name__ == '__main__':
-
-    # imports
-    from ccat import bucket
-    from ccat import height
-
-    # Get a bucket object from Bucket
-    b = bucket.Bucket(market_id=1,timeframe_id=1)
-
-    # Update the table
-    b.update()
-
-    # Get a dataframe with all the data for the market and timeframe
-    df_in = b.read_all()
-
-    # Calculate the wicks
-    df_height = height.get(df_in)
-
-    # Calculate price_close sma
-    my_sma = get(
-        df_in=df_in, id='id',
-        data='price_close',
-        n=12,
-        prefix='price_close')
-
-    print(my_sma)
