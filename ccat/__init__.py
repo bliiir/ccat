@@ -6,14 +6,14 @@ Package constructor for CCAT:
 [C]rypto [C]urrency [A]uto [T]rader - pronounced [see-cat]
 '''
 
-name = 'ccat'
+# name = 'ccat'
 
 '''
 ------------------------------------------------------------------------
     ROOT
 ------------------------------------------------------------------------
 '''
-import ccat.config as config
+# import ccat.config
 
 
 '''
@@ -22,16 +22,25 @@ import ccat.config as config
 ------------------------------------------------------------------------
 '''
 
-# import ccat.model.exchange.exchange as exchange
-# import ccat.model.exchange.order as order
 
-import ccat.model.database.client as client
-import ccat.model.database.bucket as bucket
-import ccat.model.database.market as market
-import ccat.model.database.timeframe as timeframe
-import ccat.model.database.instrument as instrument
+# from ccat.model.database.client import Client
+# from ccat.model.exchange.exchange import Exchange
+
+# from ccat.model.database.market import Market
+# from ccat.model.database.timeframe import Timeframe
+# from ccat.model.database.instrument import Instrument
+
+# from ccat.model.database.bucket import Bucket
 
 
+
+# Exchange
+
+
+# Database
+
+
+# from ccat.model.exchange.order import Order
 
 
 '''
@@ -41,26 +50,26 @@ import ccat.model.database.instrument as instrument
 '''
 
 # Features
-import ccat.controller.feature.height as height
-import ccat.controller.feature.diff as diff
+# import ccat.controller.feature.height as height
+# import ccat.controller.feature.diff as diff
 
-# Indicators
-import ccat.controller.indicator.ema as ema
-import ccat.controller.indicator.sma as sma
-import ccat.controller.indicator.rsi as rsi
+# # Indicators
+# import ccat.controller.indicator.ema as ema
+# import ccat.controller.indicator.sma as sma
+# import ccat.controller.indicator.rsi as rsi
 
-# Cross
-import ccat.controller.cross.df_x_df as df_x_df
-import ccat.controller.cross.df_x_val as df_x_val
+# # Cross
+# import ccat.controller.cross.df_x_df as df_x_df
+# import ccat.controller.cross.df_x_val as df_x_val
 
-# Signals
-import ccat.controller.signal.wix as wix
-import ccat.controller.signal.overtraded as overtraded
-import ccat.controller.signal.extreme as extreme
+# # Signals
+# import ccat.controller.signal.wix as wix
+# import ccat.controller.signal.overtraded as overtraded
+# import ccat.controller.signal.extreme as extreme
 
 # # Strategies
-import ccat.controller.strategy.momentum as momentum
+# import ccat.controller.strategy.momentum as momentum
 
-# # Views
+# Views
 # from ccat.view import report
 
