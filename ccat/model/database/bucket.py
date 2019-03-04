@@ -23,9 +23,9 @@ import pandas as pd
 # Local application imports
 from ccat import config
 
+from ccat.model.database.client import Client
 from ccat.model.database.market import Market
 from ccat.model.database.timeframe import Timeframe
-from ccat.model.database.client import Client
 
 from ccat.model.exchange.exchange import Exchange
 
@@ -76,15 +76,25 @@ class Bucket():
     # Execute the read query
     def read_execute(self, query, sort_col, sort_dir):
 
-        #self.update() ###### REMOVE WHEN SUPERVISORD OR CRONJOB
+        # self.update() ###### REMOVE WHEN SUPERVISORD OR CRONJOB
 
         # Execute the query and store it in a pandas dataframe
         df_buckets = pd.read_sql(sql=query, con=self.db_client)
 
         # Sort by sort_col and direction
-        df_buckets = df_buckets.sort_values(by=[sort_col],
-                                            ascending=sort_dir=='ASC')
-        df_buckets.set_index('id')
+        df_buckets = df_buckets.sort_values(
+            by=[sort_col],
+            ascending=sort_dir=='ASC')
+
+        df_buckets['time_close_dt'] = pd.to_datetime(
+            df_buckets['time_close'],
+            unit='ms')
+
+        # Set index to 'id'
+        # df_buckets.set_index('id', inplace=True)
+
+        # print('\nWHAT IS GOING ON?\n', df_buckets['id'].head())
+
         return df_buckets
 
 
@@ -270,58 +280,3 @@ class Bucket():
             con.execute(sql)
 
             return self.df_buckets
-
-
-'''
-------------------------------------------------------------------------
-    UNITTEST
-------------------------------------------------------------------------
-'''
-# https://docs.python.org/3.7/library/unittest.html#module-unittest
-
-import unittest
-
-class Test_Bucket(unittest.TestCase):
-
-    def setUp(self):
-
-        self.market_id = 1
-        self.timeframe_id = 1
-
-        self.bucket = Bucket(
-            market_id=self.market_id,
-            timeframe_id=self.timeframe_id)
-
-
-    def test_bucket_instantiation(self):
-        self.assertEqual(self.bucket.market_id, self.market_id)
-
-
-    def test_bucket_update(self):
-        self.buckets = self.bucket.update()
-        print('UPDATE: ', self.buckets)
-        self.assertIsNotNone(self.buckets)
-
-    def test_bucket_update_length(self):
-        self.buckets = self.bucket.update(count=25)
-        print('LENGTH: ', self.buckets)
-        self.assertEqual(len(self.buckets), 25)
-
-
-    def test_bucket_read_all(self):
-        self.all = self.bucket.read_all()
-        print('READ ALL: ', self.all)
-        self.assertIsNotNone(self.all)
-
-
-
-'''
-------------------------------------------------------------------------
-    MAIN
-------------------------------------------------------------------------
-'''
-
-if __name__ == '__main__':
-
-    unittest.main()
-    # pass

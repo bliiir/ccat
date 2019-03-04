@@ -19,6 +19,7 @@ pass
 import pandas as pd
 
 # Local application imports
+# from ccat.model.database.client import Client
 from ccat.model.database.client import Client
 
 
@@ -50,42 +51,3 @@ class Market():
 
     def get_exchange_id(self):
         return self.exchange_id
-
-'''
-------------------------------------------------------------------------
-    UNITTEST
-------------------------------------------------------------------------
-'''
-
-import unittest
-
-class Test_market(unittest.TestCase):
-
-    def setUp(self):
-        self.market_id = 1
-        self.market = Market(self.market_id)
-
-    def test_market_is_not_none(self):
-        self.assertIsNotNone(self.market)
-
-    def test_market_get(self):
-        self.assertIsNotNone(self.market.get())
-
-    def test_market_get_exchange_id(self):
-        self.assertEqual(self.market.get_exchange_id(), 3)
-
-    def test_market_symbol_native(self):
-        self.assertEqual(self.market.symbol_native, 'XBTUSD')
-
-    def test_market_symbol_ccxt(self):
-        self.assertEqual(self.market.symbol_ccxt, 'BTC/USD')
-
-'''
-------------------------------------------------------------------------
-    MAIN
-------------------------------------------------------------------------
-'''
-
-if __name__ == '__main__':
-
-    unittest.main()

@@ -34,33 +34,3 @@ class Client():
 
     def get():
         return Client.client
-
-'''
-------------------------------------------------------------------------
-    UNITTEST
-------------------------------------------------------------------------
-'''
-# https://docs.python.org/3.7/library/unittest.html#module-unittest
-
-import unittest
-import sqlalchemy
-
-class Test_db_engine(unittest.TestCase):
-
-    def test_db_engine_creation(self):
-
-        db_engine = Db.get()
-
-        self.assertIsInstance(db_engine, sqlalchemy.engine.base.Engine)
-
-
-
-'''
-------------------------------------------------------------------------- - - -
-    MAIN
-------------------------------------------------------------------------- - - -
-'''
-
-if __name__ == '__main__':
-
-    unittest.main()
