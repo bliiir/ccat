@@ -1,5 +1,5 @@
 # Crypto Currency Auto Trader
-Last updated: (2019, 01, 25)
+Last updated: (2019, 03, 08)
 
 #### URLS
 
