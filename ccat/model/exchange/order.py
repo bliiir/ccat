@@ -1,13 +1,5 @@
 '''
 ------------------------------------------------------------------------
-    ORDER.PY
-------------------------------------------------------------------------
-Place, update and get info about an order on an exchange
-'''
-
-
-'''
-------------------------------------------------------------------------
     IMPORTS
 ------------------------------------------------------------------------
 '''
@@ -20,7 +12,6 @@ import uuid
 import pandas as pd
 
 # Local application imports
-from ccat import config
 from ccat.model.database.market import Market
 from ccat.model.exchange.exchange import Exchange
 
@@ -38,9 +29,6 @@ class Order():
     def __init__(self, market_id=1):
         '''Set internal id
         '''
-        # Set internal id and timestamp
-        # self.internal_id = uuid.uuid4()
-        # self.timestamp_created = config.now()
 
         self.market_id = market_id
 
