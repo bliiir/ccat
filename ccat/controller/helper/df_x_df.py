@@ -1,18 +1,3 @@
-'''
-------------------------------------------------------------------------
-    SIGNAL.PY
-------------------------------------------------------------------------
-SIGNAL calculations. Signals are datapoints that can be directly
-inferred from the raw data
-'''
-
-
-'''
-------------------------------------------------------------------------
-    IMPORTS
-------------------------------------------------------------------------
-'''
-
 # Standard library imports
 pass
 
@@ -21,14 +6,6 @@ import pandas as pd
 # import pdb
 
 # Local application imports
-pass
-
-
-'''
-------------------------------------------------------------------------
-    CLASSES
-------------------------------------------------------------------------
-'''
 pass
 
 
@@ -102,7 +79,10 @@ def get(df_in_1, df_in_2, col_1:str, col_2:str):
 
     # Merge the two dataframes into one on key id
 
-    df_in = pd.merge(df_in_1[['id', col_1]], df_in_2[['id', col_2]])
+    df_in = pd.merge(
+        df_in_1[['id', col_1]],
+        df_in_2[['id', col_2]],
+        on='id')
 
     # breakpoint()
     df_out = pd.DataFrame()
