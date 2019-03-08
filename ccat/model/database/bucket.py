@@ -1,14 +1,5 @@
 '''
 ------------------------------------------------------------------------
-    BUCKET.PY
-------------------------------------------------------------------------
-
-I/O interface layer for the 'bucket' table in the database.
-'''
-
-
-'''
-------------------------------------------------------------------------
     IMPORTS
 ------------------------------------------------------------------------
 '''
@@ -21,14 +12,13 @@ import pandas as pd
 
 
 # Local application imports
-from ccat import config
+from ccat.controller.helper import time as t
 
 from ccat.model.database.client import Client
 from ccat.model.database.market import Market
 from ccat.model.database.timeframe import Timeframe
 
 from ccat.model.exchange.exchange import Exchange
-
 
 
 '''
@@ -44,7 +34,10 @@ class Bucket():
     '''-----------------------------------------------------------------
     CREATE
     -----------------------------------------------------------------'''
-    def __init__(self, market_id, timeframe_id):
+    def __init__(
+        self,
+        market_id:int,
+        timeframe_id:int):
 
         # Set instance attributes
         self.market_id = market_id
@@ -74,28 +67,32 @@ class Bucket():
     -----------------------------------------------------------------'''
 
     # Execute the read query
-    def read_execute(self, query, sort_col, sort_dir):
+    def read_execute(
+        self,
+        query:str,
+        sort_col:str,
+        sort_dir:str) -> pd.DataFrame:
+        # TODO: REVERSE THE DATAFRAME TO HAVE THE LATEST DATE AS FIRST ROW?
+        # TODO: ENSURE THE DATABASE IS UP TO DATE AT ALL TIMES
 
         # self.update() ###### REMOVE WHEN SUPERVISORD OR CRONJOB
 
         # Execute the query and store it in a pandas dataframe
-        df_buckets = pd.read_sql(sql=query, con=self.db_client)
+        df = pd.read_sql(sql=query, con=self.db_client)
 
         # Sort by sort_col and direction
-        df_buckets = df_buckets.sort_values(
+        df = df.sort_values(
             by=[sort_col],
             ascending=sort_dir=='ASC')
 
-        df_buckets['time_close_dt'] = pd.to_datetime(
-            df_buckets['time_close'],
+        df['time_close_dt'] = pd.to_datetime(
+            df['time_close'],
             unit='ms')
 
-        # Set index to 'id'
-        # df_buckets.set_index('id', inplace=True)
+        # Reset index to get same structure as the other outputs
+        df.reset_index(drop=True, inplace=True)
 
-        # print('\nWHAT IS GOING ON?\n', df_buckets['id'].head())
-
-        return df_buckets
+        return df
 
 
     def read_all(
@@ -115,10 +112,10 @@ class Bucket():
 
     def read_between(
         self,
-        time_begin: int = config.month_ago(),
-        time_end: int = config.now(),
+        time_begin: int = t.month_ago,
+        time_end: int = t.now,
         sort_col: str = 'time_close',
-        sort_dir: str = 'ASC'):
+        sort_dir: str = 'ASC') -> pd.DataFrame:
 
         query = f'\
             SELECT * \
@@ -136,25 +133,28 @@ class Bucket():
         self,
         count=100,
         sort_col:str = 'time_close',
-        sort_dir:str = 'ASC'):
+        sort_dir:str = 'ASC') -> pd.DataFrame:
 
         query = f'\
             SELECT * \
             FROM bucket \
             WHERE market_id = {self.market_id} \
             AND timeframe_id = {self.timeframe_id} \
-            ORDER BY time_close ASC \
+            ORDER BY time_close DESC \
             LIMIT {count}'
 
-        return self.read_execute(query, sort_col, sort_dir)
+        # Execute the query and sort the dataframe
+        df = self.read_execute(query, sort_col, sort_dir)
+
+        return df
 
 
     def read_from(
         self,
-        time_begin=config.month_ago(),
-        count=100,
+        time_begin:int = t.month_ago,
+        count:int = 100,
         sort_col:str = 'time_close',
-        sort_dir:str = 'ASC'):
+        sort_dir:str = 'ASC') -> pd.DataFrame:
 
         query = f'\
             SELECT * \
@@ -170,10 +170,10 @@ class Bucket():
 
     def read_until(
         self,
-        time_end= config.now(),
-        count=100,
+        time_end= t.now,
+        count:int = 100,
         sort_col:str = 'time_close',
-        sort_dir:str = 'ASC'):
+        sort_dir:str = 'ASC') -> pd.DataFrame:
 
         query = f'\
             SELECT * \
@@ -181,7 +181,7 @@ class Bucket():
             WHERE market_id = {self.market_id} \
             AND timeframe_id = {self.timeframe_id} \
             AND time_close <= {time_end} \
-            ORDER BY time_close ASC \
+            ORDER BY time_close DESC \
             LIMIT {count}'
 
         return self.read_execute(query, sort_col, sort_dir)
@@ -192,91 +192,98 @@ class Bucket():
     UPDATE
     -----------------------------------------------------------------'''
 
-    def update(self, count=100, time_end=config.now(), time_begin=None):
-            '''Get candles for the specified pair, timeframe from the
-            specified exchange'''
+    def update(
+        self,
+        count=100,
+        time_end=t.now,
+        time_begin=None):
+        '''Get candles for the specified pair, timeframe from the
+        specified exchange'''
 
-            if time_begin == None:
-                # Set the start of the date range to the end
-                time_begin = time_end-(self.timeframe_ms * count)
+        if time_begin == None:
+            # Set the start of the date range to the end
+            time_begin = time_end-(self.timeframe_ms * count)
 
-            # Load the market info
-            market = Market(market_id=self.market_id)
-            exchange_id = market.get_exchange_id()
+        # Load the market info
+        market = Market(market_id=self.market_id)
+        exchange_id = market.get_exchange_id()
 
-            # Get exchange instance
-            exchange = Exchange(exchange_id = exchange_id)
+        # Get exchange instance
+        exchange = Exchange(exchange_id = exchange_id)
 
-            # Get an exchange client
-            exchange_client = exchange.client()
+        # Get an exchange client
+        exchange_client = exchange.client()
 
 
-            # Fetch the OHLCV data from the exchange
-            self.buckets = exchange_client.fetch_ohlcv(
-                symbol= self.market_symbol_ccxt,
-                timeframe= self.timeframe_name,
-                limit=count,
-                since=time_begin)
+        # Fetch the OHLCV data from the exchange
+        self.buckets = exchange_client.fetch_ohlcv(
+            symbol= self.market_symbol_ccxt,
+            timeframe= self.timeframe_name,
+            limit=count,
+            since=time_begin)
 
-            # Name the columns to comply with the database
-            columns = [
-                'time_close',
-                'price_open',
-                'price_high',
-                'price_low',
-                'price_close',
-                'volume']
+        # Name the columns to comply with the database
+        columns = [
+            'time_close',
+            'price_open',
+            'price_high',
+            'price_low',
+            'price_close',
+            'volume']
 
-            # Store the results in a dataframe
-            self.df_buckets=pd.DataFrame(self.buckets, columns=columns)
+        # Store the results in a dataframe
+        self.df_buckets = pd.DataFrame(
+            self.buckets,
+            columns = columns)
 
-            # Add derived extra columns
-            self.df_buckets['market_id'] = self.market_id
-            self.df_buckets['timeframe_id'] = self.timeframe_id
-            self.df_buckets['time_updated'] = config.now()
-            self.df_buckets['time_open']=(self.df_buckets['time_close']
-                                        - self.timeframe_ms)
+        # Add derived extra columns
+        self.df_buckets['market_id'] = self.market_id
+        self.df_buckets['timeframe_id'] = self.timeframe_id
+        self.df_buckets['time_updated'] = t.now
+        self.df_buckets['time_open']=(
+            self.df_buckets['time_close'] -
+            self.timeframe_ms)
 
-            # Create 'temp_bucket' postgres database table with new data
-            self.df_buckets.to_sql('bucket_temp', con=self.db_client,
-                                    if_exists="replace")
 
-            # Insert the df_buckets dataframe into the bucket table
-            # ngn.DB.execute()
+        # 1) Create a temporary table,
+        # 2) write data to the table
+        # 3) Drop the temporary table
+        # Create 'temp_bucket' postgres database table with new data
+        self.df_buckets.to_sql(
+            'bucket_temp',
+            con=self.db_client,
+            if_exists="replace")
 
-            # Create a temporary table
-            # write data to the table
-            # Drop the temporary table
+        # TODO: SOLVE THE CONCURRENCY PROBLEM WITH THE TEMPORARY TABLE
+        # Merge the 'bucket_temp' with the 'bucket' postgres table
+        sql = '''
+            INSERT INTO bucket(
+                market_id,
+                timeframe_id,
+                time_open,
+                time_close,
+                time_updated,
+                price_open,
+                price_high,
+                price_low,
+                price_close,
+                volume)
+            SELECT
+                market_id,
+                timeframe_id,
+                time_open,
+                time_close,
+                time_updated,
+                price_open,
+                price_high,
+                price_low,
+                price_close,
+                volume
+            FROM bucket_temp
+            ON CONFLICT (market_id, timeframe_id, time_close)
+                DO NOTHING;'''
 
-            # Merge the 'bucket_temp' with the 'bucket' postgres table
-            sql = '''
-                INSERT INTO bucket(
-                    market_id,
-                    timeframe_id,
-                    time_open,
-                    time_close,
-                    time_updated,
-                    price_open,
-                    price_high,
-                    price_low,
-                    price_close,
-                    volume)
-                SELECT
-                    market_id,
-                    timeframe_id,
-                    time_open,
-                    time_close,
-                    time_updated,
-                    price_open,
-                    price_high,
-                    price_low,
-                    price_close,
-                    volume
-                FROM bucket_temp
-                ON CONFLICT (market_id, timeframe_id, time_close)
-                    DO NOTHING;'''
+        con = self.db_client.connect()
+        con.execute(sql)
 
-            con = self.db_client.connect()
-            con.execute(sql)
-
-            return self.df_buckets
+        return self.df_buckets
