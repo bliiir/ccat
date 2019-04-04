@@ -1,20 +1,7 @@
-'''
-------------------------------------------------------------------------
-    INDICATOR.PY
-------------------------------------------------------------------------
-Indicator calculations. Indicators are datapoints that can be
-directly inferred from the raw data and or features
-'''
-
-
-'''
-------------------------------------------------------------------------
-    IMPORTS
-------------------------------------------------------------------------
-'''
+# IMPORTS --------------------------------------------------------------
 
 # Standard library imports
-pass
+import pdb
 
 # Third party imports
 import pandas as pd
@@ -23,11 +10,7 @@ import pandas as pd
 pass
 
 
-'''
-------------------------------------------------------------------------
-    FUNCTIONS
-------------------------------------------------------------------------
-'''
+# MODULE ---------------------------------------------------------------
 
 # Relative Strength Index (RSI)
 def get(
@@ -35,13 +18,14 @@ def get(
     id:str = 'id',
     data:str = 'data',
     n:int = 14,
-    prefix:str = '',
-    full:bool = False) -> pd.DataFrame:
+    prefix:str = '') -> pd.DataFrame:
 
     '''Calculates the relative strength index (RSI) of a given number of
     rows (n) in a given dataframe (df) for the column 'data', adds the
     result to an output dataframe(df_out) along with the 'id' and
     returns it.
+
+    https://www.iexplain.org/rsi-how-to-calculate-it/
 
     Args:
         :df_in (pandas dataframe):
@@ -60,15 +44,15 @@ def get(
             added
     '''
 
-        # Create a new dataframe to avoid aliasing
-    df_out = pd.DataFrame()
+    # Create a new dataframe to avoid aliasing
+    df = pd.DataFrame()
 
     # Copy id column from incoming dataframe to outgoing dataframe
-    # df_out['id']= df_in['id']
-    df_out = df_in.copy()
+    # df['id']= df_in['id']
+    df = df_in[['id', data]].copy()
 
     # Set the df index to the id column
-    # df_out.set_index('id', inplace=True)
+    # df.set_index('id', inplace=True)
 
     # Assemble the column title
     title = f'{prefix}_rsi'
@@ -102,13 +86,6 @@ def get(
     rsi = 100 - 100/(1+rs)
     # rsi = rsi.fillna(50)
 
-    df_out[title] = rsi
+    df[title] = rsi
 
-    # print('\nNAMES: ', df_out.columns.values)
-    # print('\nCONTENT: ', df_out[['id','price_close_rsi']])
-
-
-    if full == True:
-        return df_out
-    else:
-        return df_out[['id',title]]
+    return df[['id',title]]

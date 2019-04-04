@@ -1,20 +1,7 @@
-'''
-------------------------------------------------------------------------
-    INDICATOR.PY
-------------------------------------------------------------------------
-Indicator calculations. Indicators are datapoints that can be
-directly inferred from the raw data and or features
-'''
-
-
-'''
-------------------------------------------------------------------------
-    IMPORTS
-------------------------------------------------------------------------
-'''
+# IMPORTS --------------------------------------------------------------
 
 # Standard library imports
-pass
+import pdb
 
 # Third party imports
 import pandas as pd
@@ -23,11 +10,7 @@ import pandas as pd
 pass
 
 
-'''
-------------------------------------------------------------------------
-    FUNCTIONS
-------------------------------------------------------------------------
-'''
+# MODULE ---------------------------------------------------------------
 
 def get(
     df_in:pd.DataFrame,
@@ -62,20 +45,16 @@ def get(
             calculated columns appended.
     '''
 
-    # Create a new dataframe to avoid aliasing
-    df_out = pd.DataFrame()
-
-    # Copy id column from incoming dataframe to the outgoing dataframe
-    df_out['id']= df_in['id']
-
-    # Set the df index to the id column
-    # df_out.set_index('id', inplace=True)
+    # Copy df_in to df_out to avoid aliasing
+    df_out = df_in[['id', data]].copy()
 
     # Assemble the column title
     title = f'{prefix}_sma'
     # print("this worked", title)
 
     # Calculate ema and store it in column with title assembled above
-    df_out[title]=df_in[data].rolling(window=n).mean()
+    df_out[title]=df_out[data].rolling(window=n).mean()
+
+    df_out = df_out[['id', title]]
 
     return df_out

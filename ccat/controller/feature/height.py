@@ -1,11 +1,7 @@
-'''
-------------------------------------------------------------------------
-    IMPORTS
-------------------------------------------------------------------------
-'''
+# IMPORTS --------------------------------------------------------------
 
 # Standard library imports
-pass
+import pdb
 
 # Third party imports
 import pandas as pd
@@ -14,21 +10,22 @@ import numpy as np
 # Local application imports
 from ccat import config
 
-'''
-------------------------------------------------------------------------
-    CLASSES
-------------------------------------------------------------------------
-'''
-pass
 
+# FEATURE --------------------------------------------------------------
 
-'''
-------------------------------------------------------------------------
-    FUNCTIONS
-------------------------------------------------------------------------
-'''
+def get(
+    df_in: pd.DataFrame) -> pd.DataFrame:
 
-def get(df_in: pd.DataFrame) -> pd.DataFrame:
+    cols = [
+        'id',           # 0
+        'abs_total',    # 1
+        'abs_body',     # 2
+        'abs_top',      # 3
+        'abs_bottom',   # 4
+        'pct_body',     # 5
+        'pct_top',      # 6
+        'pct_bottom']   # 7
+
 
     '''Calculates the absolute (abs) and relative (pct) height of the
     candle and its elements - total, body, top-wick and bottom-wick
@@ -78,35 +75,36 @@ def get(df_in: pd.DataFrame) -> pd.DataFrame:
     df_out = pd.DataFrame()
 
     # Copy id column from incoming dataframe to outgoing dataframe
-    df_out['id']= df_in['id'].copy()
+    df_out[cols[0]]= df_in[cols[0]].copy()
 
     # Set the df index to the id column
-    df_out.set_index('id')
+    df_out.set_index(cols[0])
 
     # Total height
-    df_out['abs_total'] = df_in.price_high-df_in.price_low
+    df_out[cols[1]] = df_in.price_high-df_in.price_low
 
     # Body height
-    df_out['abs_body'] = df_in.price_close-df_in.price_open
+    df_out[cols[2]] = df_in.price_close-df_in.price_open
 
     # Top wick height
-    df_out['abs_top']=np.where(
+    df_out[cols[3]]=np.where(
         df_in.price_close >= df_in.price_open,
         df_in.price_high - df_in.price_close,
         df_in.price_high - df_in.price_open)
 
     # Bottom wick height
-    df_out['abs_bottom']=np.where(
+    df_out[cols[4]]=np.where(
         df_in.price_close < df_in.price_open,
         df_in.price_close - df_in.price_low ,
         df_in.price_open - df_in.price_low)
 
-    df_out['pct_body'] = df_out['abs_body'] / df_out['abs_total']
+    # Body height percentage of total candle height
+    df_out[cols[5]] = df_out[cols[2]] / df_out[cols[1]]
 
     # Top Wick height percentage of total candle height
-    df_out['pct_top'] = df_out['abs_top'] / df_out['abs_total']
+    df_out[cols[6]] = df_out[cols[3]] / df_out[cols[1]]
 
     # Bottom Wick height percentage of total candle height
-    df_out['pct_bottom'] = df_out['abs_bottom'] / df_out['abs_total']
+    df_out[cols[7]] = df_out[cols[4]] / df_out[cols[1]]
 
     return df_out

@@ -1,20 +1,7 @@
-'''
-------------------------------------------------------------------------
-    INDICATOR.PY
-------------------------------------------------------------------------
-Indicator calculations. Indicators are datapoints that can be
-directly inferred from the raw data and or features
-'''
-
-
-'''
-------------------------------------------------------------------------
-    IMPORTS
-------------------------------------------------------------------------
-'''
+# IMPORTS --------------------------------------------------------------
 
 # Standard library imports
-pass
+import pdb
 
 # Third party imports
 import pandas as pd
@@ -23,11 +10,7 @@ import pandas as pd
 pass
 
 
-'''
-------------------------------------------------------------------------
-    FUNCTIONS
-------------------------------------------------------------------------
-'''
+# MODULE --------------------------------------------------------------
 
 
 # Exponential Moving Average (EMA)
@@ -61,21 +44,16 @@ def get(
             added
     '''
 
-
-    # Create a new dataframe to avoid aliasing
-    df_out = pd.DataFrame()
-
     # Copy id column from incoming dataframe to outgoing dataframe
-    df_out['id']= df_in['id']
+    df_out= df_in[[id, data]].copy()
 
     # Set the df index to the id column
     # df_out.set_index('id', inplace=True)
 
-    # Assemble the column title
-    title = f'{prefix}_ema'
-
     # Calculate ema and store it in a column with title assembled above
-    df_out[title]=df_in[data].ewm(span=n, adjust=False).mean()
+    df_out[f'{prefix}_ema']=df_in[data].ewm(
+        span=n,
+        adjust=False).mean()
 
-    return df_out
+    return df_out[['id', f'{prefix}_ema']]
 
