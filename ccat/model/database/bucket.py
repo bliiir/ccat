@@ -1,8 +1,4 @@
-'''
-------------------------------------------------------------------------
-    IMPORTS
-------------------------------------------------------------------------
-'''
+# IMPORTS --------------------------------------------------------------
 
 # Standard library imports
 # import pdb
@@ -21,19 +17,14 @@ from ccat.model.database.timeframe import Timeframe
 from ccat.model.exchange.exchange import Exchange
 
 
-'''
-------------------------------------------------------------------------
-    CLASSES
-------------------------------------------------------------------------
-'''
+# MODULE --------------------------------------------------------------
 
 class Bucket():
     '''(C)RU(D) operations on the bucket table in the postgres database
     '''
 
-    '''-----------------------------------------------------------------
-    CREATE
-    -----------------------------------------------------------------'''
+    # CREATE -----------------------------------------------------------
+
     def __init__(
         self,
         market_id:int,
@@ -62,9 +53,7 @@ class Bucket():
         self.db_client = Client.get()
 
 
-    '''-----------------------------------------------------------------
-    READ
-    -----------------------------------------------------------------'''
+    # READ -------------------------------------------------------------
 
     # Execute the read query
     def read_execute(
@@ -85,9 +74,9 @@ class Bucket():
             by=[sort_col],
             ascending=sort_dir=='ASC')
 
-        df['time_close_dt'] = pd.to_datetime(
-            df['time_close'],
-            unit='ms')
+        # df['time_close_dt'] = pd.to_datetime(
+        #     df['time_close'],
+        #     unit='ms')
 
         # Reset index to get same structure as the other outputs
         df.reset_index(drop=True, inplace=True)
@@ -188,9 +177,7 @@ class Bucket():
 
 
 
-    '''-----------------------------------------------------------------
-    UPDATE
-    -----------------------------------------------------------------'''
+    # UPDATE -----------------------------------------------------------
 
     def update(
         self,

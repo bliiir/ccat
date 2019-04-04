@@ -1,19 +1,6 @@
-'''
-------------------------------------------------------------------------
-    INSTRUMENT.PY
-------------------------------------------------------------------------
-I/O interface layer for the 'instrument' table in the database.
-'''
+# IMPORTS --------------------------------------------------------------
 
-
-'''
-------------------------------------------------------------------------
-    IMPORTS
-------------------------------------------------------------------------
-'''
-
-# Standard library imports
-pass
+import pdb
 
 # Third party imports
 import pandas as pd
@@ -22,13 +9,11 @@ import pandas as pd
 from ccat.model.database.client import Client
 
 
-'''
-------------------------------------------------------------------------
-    CLASSES
-------------------------------------------------------------------------
-'''
+# MODULE ---------------------------------------------------------------
 
 class Instrument():
+    '''I/O interface layer for the 'instrument' table in the database.
+    '''
 
     def __init__(self, market_id=1):
 
