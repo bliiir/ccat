@@ -1,8 +1,4 @@
-'''
-------------------------------------------------------------------------
-    IMPORTS
-------------------------------------------------------------------------
-'''
+# IMPORTS --------------------------------------------------------------
 
 # Standard packages
 import unittest
@@ -17,16 +13,14 @@ import ccat.controller.indicator.sma as sma
 import ccat.controller.helper.df_x_df as df_x_df
 
 
-'''
-------------------------------------------------------------------------
-    CLASSES
-------------------------------------------------------------------------
-'''
+# TESTS ----------------------------------------------------------------
 
 class Test_controller_helper_df_x_df(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
+
+        cls.prefix = 'test'
 
         # Get a bucket object from Bucket
         cls.b = Bucket(
@@ -41,36 +35,37 @@ class Test_controller_helper_df_x_df(unittest.TestCase):
 
         # Calculate wick_top ema
         cls.wick_top_sma = sma.get(
-            df_in=cls.df_height, id='id',
-            data='abs_top',
-            n=40,
-            prefix='abs_top')
+            df_in = cls.df_height,
+            id = 'id',
+            data = 'abs_top',
+            n = 40,
+            prefix = 'abs_top')
 
         # Calculate wick_bottom ema
         cls.wick_bottom_sma = sma.get(
-            df_in=cls.df_height, id='id',
-            data='abs_bottom',
-            n=40,
-            prefix='abs_bottom')
+            df_in = cls.df_height, id='id',
+            data = 'abs_bottom',
+            n = 40,
+            prefix = 'abs_bottom')
 
         cls.crossover_wick_ema = df_x_df.get(
             df_in_1 = cls.wick_top_sma,
             df_in_2 = cls.wick_bottom_sma,
             col_1 = cls.wick_top_sma.columns[1],
-            col_2 = cls.wick_bottom_sma.columns[1])
+            col_2 = cls.wick_bottom_sma.columns[1],
+            prefix = cls.prefix)
 
 
     def test_df_x_df_column_names(self):
 
         col_names = [
             'id',
-            'abs_top_sma',
-            'abs_bottom_sma',
-            'crossover',
-            'crossunder',
-            'cross']
+            f'{self.prefix}_crossover',
+            f'{self.prefix}_crossunder']
+            # f'{self.prefix}_cross']
 
-        self.assertCountEqual(list(self.crossover_wick_ema.columns.values), col_names)
+        for col_name in col_names:
+            self.assertIn(col_name, list(self.crossover_wick_ema.columns.values))
 
 
     def test_df_x_df_not_empty(self):
@@ -83,12 +78,7 @@ class Test_controller_helper_df_x_df(unittest.TestCase):
         self.assertIsNotNone(self.crossover_wick_ema)
 
 
-
-'''
-------------------------------------------------------------------------
-    MAIN
-------------------------------------------------------------------------
-'''
+# MAIN --------------------------------------------------------------
 
 if __name__ == '__main__':
 

@@ -1,11 +1,8 @@
-'''
-------------------------------------------------------------------------
-    IMPORTS
-------------------------------------------------------------------------
-'''
+# IMPORTS --------------------------------------------------------------
 
 # Standard packages
 import unittest
+import pdb
 
 # Third party packages
 pass
@@ -16,17 +13,14 @@ import ccat.controller.indicator.rsi as rsi
 import ccat.controller.helper.df_x_val as df_x_val
 
 
-'''
-------------------------------------------------------------------------
-    CLASSES
-------------------------------------------------------------------------
-'''
-
+# TESTS ----------------------------------------------------------------
 
 class Test_controller_helper_df_x_val(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
+
+        cls.col = 'price_close'
 
         # Get a bucket object from Bucket
         cls.b = Bucket(
@@ -38,42 +32,33 @@ class Test_controller_helper_df_x_val(unittest.TestCase):
 
         # Calculate price_close rsi
         cls.price_close_rsi = rsi.get(
-            df_in = cls.df_in, id='id',
-            data = 'price_close',
+            df_in = cls.df_in,
+            id='id',
+            data = cls.col,
             n = 40,
-            prefix = 'price_close')
+            prefix = cls.col)
 
         # print(price_close_rsi)
         cls.rsi_x_val = df_x_val.get(
             df_in = cls.price_close_rsi,
             col = cls.price_close_rsi.columns[1],
-            val = 30)
+            val = 30,
+            prefix = cls.price_close_rsi.columns[1])
 
 
-    def test_df_x_val_column_names(self):
+    def test_df_x_val_has_columns_with_prefix_in_the_name(self):
 
-        col_names = [
-            'id',
-            'price_close_rsi',
-            'x_value',
-            'crossover',
-            'crossunder',
-            'cross']
+        cols = self.rsi_x_val.columns
 
-        self.assertCountEqual(
-            list(self.rsi_x_val.columns.values),
-            col_names)
+        self.assertGreater(len(cols), 3)
+        self.assertIn(self.col, str(cols))
 
 
-    def test_df_x_val_has_content(self):
+    def test_df_x_val_has_rows(self):
         self.assertEqual(len(self.rsi_x_val.tail(10)), 10)
 
 
-'''
-------------------------------------------------------------------------
-    MAIN
-------------------------------------------------------------------------
-'''
+# MAIN -----------------------------------------------------------------
 
 if __name__ == '__main__':
 

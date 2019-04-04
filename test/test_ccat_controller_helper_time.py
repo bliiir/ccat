@@ -11,11 +11,11 @@ from datetime import datetime as dt
 from dateutil.relativedelta import relativedelta as rd
 from math import floor
 
-# Third party packages
-pass
+import pandas as pd
 
 # Local packages
 import ccat.controller.helper.time as t
+from ccat.model.database.bucket import Bucket
 
 
 '''
@@ -27,8 +27,33 @@ import ccat.controller.helper.time as t
 
 class Test_controller_helper_time(unittest.TestCase):
 
-    # @classmethod
-    # def setUpClass(cls):
+    @classmethod
+    def setUpClass(cls):
+        pass
+
+
+    def test_unix_to_datetime(self):
+
+        market_id = 1
+        timeframe_id = 6
+
+        # Get bucket instance
+        bucket = Bucket(
+            market_id = market_id,
+            timeframe_id = timeframe_id)
+
+        # Get bucket dataframe
+        df = bucket.read_until(
+            time_end = t.now,
+            count = 50,
+            sort_col = 'time_close',
+            sort_dir = 'ASC')
+
+        time1 = t.unix_to_datetime(df, 'time_close')
+        time2 = pd.to_datetime(df['time_close'], unit='ms')
+
+        self.assertCountEqual(time1['time_close_ISO'], time2)
+
 
     def test_time_duration(self):
 
@@ -46,10 +71,13 @@ class Test_controller_helper_time(unittest.TestCase):
     def test_time_present(self):
 
         now = t.now
+        # now1 = floor((dt.utcnow().timestamp())*1000)
 
-        self.assertEqual(
-            floor((dt.now().timestamp())),
-            floor(now/1000) )
+        # pdb.set_trace()
+
+        self.assertAlmostEqual(
+            floor((dt.utcnow().timestamp())),
+            floor(now/1000), places = 2 )
 
 
     def test_time_past(self):
@@ -60,29 +88,29 @@ class Test_controller_helper_time(unittest.TestCase):
         year_ago = t.year_ago
 
         self.assertAlmostEqual(
-            floor(((dt.now() - rd(hours=1)).timestamp())),
+            floor(((dt.utcnow() - rd(hours=1)).timestamp())),
             floor(hour_ago/1000),
-            places = 7)
+            places = 2)
 
         self.assertAlmostEqual(
-            floor(((dt.now() - rd(days=1)).timestamp())),
+            floor(((dt.utcnow() - rd(days=1)).timestamp())),
             floor(day_ago/1000),
-            places = 7)
+            places = 2)
 
         self.assertAlmostEqual(
-            floor(((dt.now() - rd(weeks=1)).timestamp())),
+            floor(((dt.utcnow() - rd(weeks=1)).timestamp())),
             floor(week_ago/1000),
-            places = 7)
+            places = 2)
 
         self.assertAlmostEqual(
-            floor(((dt.now() - rd(months=1)).timestamp())),
+            floor(((dt.utcnow() - rd(months=1)).timestamp())),
             floor(month_ago/1000),
-            places = 7)
+            places = 2)
 
         self.assertAlmostEqual(
-            floor(((dt.now() - rd(years=1)).timestamp())),
+            floor(((dt.utcnow() - rd(years=1)).timestamp())),
             floor(year_ago/1000),
-            places = 7)
+            places = 2)
 
 '''
 ------------------------------------------------------------------------

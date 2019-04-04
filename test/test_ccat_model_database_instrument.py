@@ -1,11 +1,8 @@
-'''
-------------------------------------------------------------------------
-    IMPORTS
-------------------------------------------------------------------------
-'''
+# IMPORTS --------------------------------------------------------------
 
 # Standard packages
 import unittest
+import pdb
 
 # Third party packages
 pass
@@ -15,11 +12,7 @@ from ccat.model.database.instrument import Instrument
 
 
 
-'''
-------------------------------------------------------------------------
-    CLASSES
-------------------------------------------------------------------------
-'''
+# TESTS ----------------------------------------------------------------
 
 
 class Test_model_database_instrument(unittest.TestCase):
@@ -29,6 +22,12 @@ class Test_model_database_instrument(unittest.TestCase):
 
         cls.market_id = 1
         cls.my_instrument = Instrument(market_id=1)
+
+    def test_get(self):
+        instrument = self.my_instrument.get()
+        self.assertIsNotNone(instrument)
+        self.assertIn('asset_base_id', dir(instrument))
+        self.assertIn('market_id', dir(instrument))
 
     def test_is_not_none(self):
         self.assertIsNotNone(self.my_instrument)
@@ -49,11 +48,7 @@ class Test_model_database_instrument(unittest.TestCase):
             3)
 
 
-'''
-------------------------------------------------------------------------
-    MAIN
-------------------------------------------------------------------------
-'''
+# MAIN -----------------------------------------------------------------
 
 if __name__ == '__main__':
 

@@ -1,11 +1,8 @@
-'''
-------------------------------------------------------------------------
-    IMPORTS
-------------------------------------------------------------------------
-'''
+# IMPORTS --------------------------------------------------------------
 
 # Standard packages
 import unittest
+import pdb
 
 # Third party packages
 import pandas as pd
@@ -15,16 +12,13 @@ from ccat.model.database.bucket import Bucket
 from ccat.controller.signal.reversal import Reversal
 
 
-'''
-------------------------------------------------------------------------
-    CLASSES
-------------------------------------------------------------------------
-'''
+# TEST -----------------------------------------------------------------
 
 class Test_controller_signal_reversal_real_data(unittest.TestCase):
     '''Test if the overtraded module returns the expexted results by
     exposing it to a known dataset
     '''
+
 
     @classmethod
     def setUpClass(cls):
@@ -32,7 +26,7 @@ class Test_controller_signal_reversal_real_data(unittest.TestCase):
         # Get a bucket object from Bucket
         cls.b = Bucket(
             market_id = 1,
-            timeframe_id = 1)
+            timeframe_id = 6)
 
         # Get dataframe with all the market and timeframe data
         cls.df_bucket = cls.b.read_all()
@@ -45,13 +39,11 @@ class Test_controller_signal_reversal_real_data(unittest.TestCase):
             df_bucket = cls.df_bucket,
             len_ma_top = 40,
             len_ma_bottom = 40,
-            suffix = 'reversal')
+            prefix = 'reversal')
 
 
     def test_reversal_get_current_signal(self):
-        df = self.reversal.get(cols = ['signal_reversal'], rows = 1)
-        signal = df.iat[0,1]
-        # print('\nREVERSAL CURRENT SIGNAL', signal)
+        signal = self.reversal.signal()
         self.assertIn(signal, [0, 1, -1])
 
 
@@ -59,7 +51,7 @@ class Test_controller_signal_reversal_real_data(unittest.TestCase):
 
         cols = [
             'id',
-            'signal_reversal']
+            'reversal_signal']
 
         df = self.reversal.get(cols)
 
@@ -69,54 +61,37 @@ class Test_controller_signal_reversal_real_data(unittest.TestCase):
 
     def test_reversal_get_default(self):
 
-        cols = [
-            'id',
-            'abs_top_ema',
-            'abs_bottom_ema',
-            'crossover',
-            'crossunder',
-            'cross',
-            'long_wix',
-            'short_wix',
-            'signal_wix']
+        df = self.reversal.get()
+
+        self.assertIsInstance(df, pd.DataFrame)
+        # self.assertGreater(len(df.columns), 10)
+        self.assertEqual(len(df.tail(10)), 10)
 
 
-    def test_reversal_object_has_time_series_data(self):
+    def test_reversal_short(self):
 
-        cols = [
-            'id',
-            'market_id',
-            'timeframe_id',
-            'time_open',
-            'time_close',
-            'time_updated',
-            'price_open',
-            'price_high',
-            'price_close',
-            'price_low',
-            'volume',
-            'time_close_dt']
+        df = self.reversal.short()
 
-        self.assertIn('id', self.reversal.df_bucket.columns)
-        self.assertCountEqual(cols, self.reversal.df_bucket.columns)
-        self.assertEqual(10, len(self.reversal.df_bucket.tail(10)))
+        self.assertEqual(len(df.columns), 2)
+        self.assertEqual(len(df.head(10)), 10)
 
 
-    def test_reversal_object_has_vars(self):
-        self.assertIn('len_ma_top', vars(self.reversal))
-        self.assertIn('len_ma_bottom', vars(self.reversal))
+    def test_reversal_long(self):
+
+        df = self.reversal.long()
+
+        self.assertEqual(len(df.columns), 2)
+        self.assertEqual(len(df.head(10)), 10)
 
 
     def test_reversal_object_has_get_method(self):
+        self.assertIn('long', dir(self.reversal))
+        self.assertIn('short', dir(self.reversal))
         self.assertIn('get', dir(self.reversal))
 
 
 
-'''
-------------------------------------------------------------------------
-    MAIN
-------------------------------------------------------------------------
-'''
+# MAIN -----------------------------------------------------------------
 
 if __name__ == '__main__':
 

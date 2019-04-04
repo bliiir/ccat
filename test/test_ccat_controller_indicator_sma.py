@@ -1,11 +1,8 @@
-'''
-------------------------------------------------------------------------
-    IMPORTS
-------------------------------------------------------------------------
-'''
+# IMPORTS ----------------------------------------------------------------
 
 # Standard packages
 import unittest
+import pdb
 
 # Third party packages
 import pandas as pd
@@ -15,11 +12,7 @@ from ccat.model.database.bucket import Bucket
 import ccat.controller.indicator.sma as sma
 
 
-'''
-------------------------------------------------------------------------
-    CLASSES
-------------------------------------------------------------------------
-'''
+# TESTS ----------------------------------------------------------------
 
 
 class Test_controller_indicator_sma(unittest.TestCase):
@@ -43,6 +36,7 @@ class Test_controller_indicator_sma(unittest.TestCase):
             n=12,
             prefix='price_close')
 
+
     def test_has_content(self):
         self.assertEqual(len(self.my_sma.tail(10)), 10)
 
@@ -54,12 +48,7 @@ class Test_controller_indicator_sma(unittest.TestCase):
         self.assertIsNotNone(self.my_sma)
 
 
-
-'''
-------------------------------------------------------------------------
-    MAIN
-------------------------------------------------------------------------
-'''
+# MAIN ----------------------------------------------------------------
 
 if __name__ == '__main__':
 

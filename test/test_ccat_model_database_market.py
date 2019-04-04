@@ -1,12 +1,8 @@
-''''
-------------------------------------------------------------------------
-    IMPORTS
-------------------------------------------------------------------------
-'''
+# IMPORTS --------------------------------------------------------------
 
 # Standard packages
 import unittest
-
+import pdb
 
 # Third party packages
 pass
@@ -15,12 +11,7 @@ pass
 from ccat.model.database.market import Market
 
 
-'''
-------------------------------------------------------------------------
-    CLASSES
-------------------------------------------------------------------------
-'''
-
+# TESTS ----------------------------------------------------------------
 
 class Test_model_database_market(unittest.TestCase):
 
@@ -34,7 +25,9 @@ class Test_model_database_market(unittest.TestCase):
         self.assertIsNotNone(self.market)
 
     def test_market_get(self):
-        self.assertIsNotNone(self.market.get())
+        market = self.market.get()
+        self.assertIsNotNone(market)
+        self.assertIn('exchange_id', dir(market))
 
     def test_market_get_exchange_id(self):
         self.assertEqual(self.market.get_exchange_id(), 3)
@@ -47,11 +40,7 @@ class Test_model_database_market(unittest.TestCase):
 
 
 
-'''
-------------------------------------------------------------------------
-    MAIN
-------------------------------------------------------------------------
-'''
+# MAIN ----------------------------------------------------------------
 
 if __name__ == '__main__':
 

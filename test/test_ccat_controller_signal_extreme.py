@@ -1,8 +1,4 @@
-'''
-------------------------------------------------------------------------
-    IMPORTS
-------------------------------------------------------------------------
-'''
+# IMPORTS --------------------------------------------------------------
 
 # Standard packages
 import unittest
@@ -17,11 +13,7 @@ from ccat.model.database.bucket import Bucket
 from ccat.controller.signal.extreme import Extreme
 
 
-'''
-------------------------------------------------------------------------
-    CLASSES
-------------------------------------------------------------------------
-'''
+# TEST -----------------------------------------------------------------
 
 class Test_controller_signal_extreme_real_data(unittest.TestCase):
     '''Test if the extreme module returns the expexted results
@@ -29,6 +21,14 @@ class Test_controller_signal_extreme_real_data(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
+
+        cls.len_ma_top = 40
+        cls.len_ma_bottom = 40
+        cls.prefix = 'extreme'
+        cls.l1 = 3.0
+        cls.l2 = 1.5
+        cls.s1 = 3.0
+        cls.s2 = 1.5
 
         cls.bucket = Bucket(
             market_id = 1,
@@ -40,43 +40,36 @@ class Test_controller_signal_extreme_real_data(unittest.TestCase):
 
         cls.extreme = Extreme(
             df_bucket = cls.df_bucket,
-            len_ma_top= 40,
-            len_ma_bottom = 40,
-            suffix = 'extreme')
+            len_ma_top = cls.len_ma_top,
+            len_ma_bottom = cls.len_ma_bottom,
+            prefix = cls.prefix,
+            l1 = cls.l1,
+            l2 = cls.l2,
+            s1 = cls.s1,
+            s2 = cls.s2)
 
 
-    def test_extreme_signal(self):
-
+    def test_extreme_signal_only(self):
         signal = self.extreme.signal()
         self.assertIn(signal, [-1, 0, 1])
 
 
     def test_extreme_get_custom_rows(self):
 
-        cols = ['id', 'time_close_dt', 'signal_extreme']
         rows = 5
-
-        df = self.extreme.get(
-            cols = cols,
-            rows = rows)
+        df = self.extreme.get(rows = rows)
 
         self.assertEqual(len(df), rows)
-        self.assertCountEqual(df.columns, cols)
 
 
     def test_extreme_get_custom_columns(self):
 
         cols = [
-            # 'time_close',
-            'time_close_dt',
-            # 'abs_top_ema',
-            # 'abs_bottom_ema',
-            # 'long_extreme',
-            # 'short_extreme',
-            'signal_extreme'
-            ]
+            'id',
+            f'{self.prefix}_signal']
 
         df = self.extreme.get(cols = cols)
+
         self.assertCountEqual(df.columns, cols)
 
 
@@ -84,33 +77,15 @@ class Test_controller_signal_extreme_real_data(unittest.TestCase):
 
         cols = [
             'id',
-            'market_id',
-            'timeframe_id',
-            'time_open',
-            'time_close',
-            'time_updated',
-            'price_open',
-            'price_high',
-            'price_close',
-            'price_low',
-            'volume',
-            'time_close_dt',
-            'abs_total',
-            'abs_body',
-            'abs_top',
-            'abs_bottom',
-            'pct_body',
-            'pct_top',
-            'pct_bottom',
-            'abs_top_ema',
-            'abs_bottom_ema',
-            'long_extreme',
-            'short_extreme',
-            'signal_extreme']
+            f'{self.prefix}_long',
+            f'{self.prefix}_short',
+            f'{self.prefix}_signal']
 
         df = self.extreme.get()
 
-        self.assertCountEqual(df.columns, cols)
+        for col in cols:
+            self.assertIn(col, list(df.columns.values))
+
         self.assertEqual(10, len(df.tail(10)))
 
 
@@ -118,7 +93,7 @@ class Test_controller_signal_extreme_real_data(unittest.TestCase):
 
         df = self.extreme.short()
 
-        cols = ['id', 'short_extreme']
+        cols = ['id', f'{self.prefix}_short']
 
         self.assertCountEqual(df.columns, cols)
         self.assertEqual(len(df.tail(10)), 10)
@@ -127,21 +102,15 @@ class Test_controller_signal_extreme_real_data(unittest.TestCase):
     def test_extreme_long(self):
 
         df = self.extreme.long()
-
-        cols = ['id', 'long_extreme']
+        cols = ['id', f'{self.prefix}_long']
 
         self.assertCountEqual(df.columns, cols)
         self.assertEqual(len(df.tail(10)), 10)
 
 
     def test_extreme_instance_attributes(self):
-        self.assertEqual(self.extreme.len_ma_top, 40)
-        self.assertEqual(self.extreme.len_ma_bottom, 40)
-        self.assertEqual(self.extreme.suffix, 'extreme')
-        self.assertEqual(len(self.extreme.df_bucket.tail(10)), 10)
-        self.assertEqual(len(self.extreme.df_heights.tail(10)), 10)
-        self.assertEqual(len(self.extreme.df_ema_top.tail(10)), 10)
-        self.assertEqual(len(self.extreme.df_ema_bottom.tail(10)), 10)
+        self.assertEqual(self.extreme.prefix, f'{self.prefix}')
+        self.assertEqual(len(self.extreme.df_main.tail(10)), 10)
 
 
     def test_extreme_object_has__methods(self):
@@ -151,11 +120,7 @@ class Test_controller_signal_extreme_real_data(unittest.TestCase):
 
 
 
-'''
-------------------------------------------------------------------------
-    MAIN
-------------------------------------------------------------------------
-'''
+# MAIN -----------------------------------------------------------------
 
 if __name__ == '__main__':
 

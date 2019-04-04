@@ -1,11 +1,8 @@
-'''
-------------------------------------------------------------------------
-    IMPORTS
-------------------------------------------------------------------------
-'''
+# IMPORTS --------------------------------------------------------------
 
 # Standard packages
 import unittest
+import pdb
 
 # Third party packages
 import pandas as pd
@@ -17,44 +14,45 @@ from ccat.controller.helper import time as t
 
 from ccat.model.database.bucket import Bucket
 from ccat.controller.signal.overtraded import Overtraded
+import ccat.controller.helper.df_magic as df_magic
 
-'''
-------------------------------------------------------------------------
-    CLASSES
-------------------------------------------------------------------------
-'''
+
+# TESTS ----------------------------------------------------------------
 
 class Test_controller_signal_overtraded_real_data(unittest.TestCase):
     '''Test if the overtraded module returns the expexted results by
-    exposing it to a known dataset
+    exposing it to a real dataset
     '''
 
     @classmethod
     def setUpClass(cls):
 
+        cls.len_rsi = 20
+        cls.high = 60
+        cls.low = 40
+        cls.col = 'price_close'
+        cls.prefix = 'overtraded'
+
         # Get a bucket object from Bucket
-        cls.b = Bucket(
+        cls.bucket = Bucket(
             market_id = 1,
             timeframe_id = 1)
 
         # Get a dataframe with all the data for the market and timeframe
-        cls.df_bucket = cls.b.read_all()
-
-        # Number of candles/buckets to include in the rsi calculation
-        len_rsi = 20
+        cls.df_bucket = cls.bucket.read_all()
 
         # Get an instance of the Overtraded object
         cls.overtraded = Overtraded(
             df_bucket = cls.df_bucket,
-            len_rsi = len_rsi,
-            high = 60,
-            low = 40,
-            col = 'price_close',
-            suffix = 'rsi')
+            len_rsi = cls.len_rsi,
+            high = cls.high,
+            low = cls.low ,
+            col = cls.col,
+            prefix = cls.prefix)
 
-    def test_overtraded_get_current_signals(self):
-        df = self.overtraded.get(cols = ['signal_rsi'], rows = 1)
-        signal = df.iat[0,1]
+
+    def test_overtraded_get_current_signal_only(self):
+        signal = self.overtraded.signal()
         self.assertIn(signal, [0, 1, -1])
 
 
@@ -67,42 +65,64 @@ class Test_controller_signal_overtraded_real_data(unittest.TestCase):
 
         cols = [
             'id',
-            # 'market_id',
-            # 'timeframe_id',
-            # 'time_open',
-            'time_close',
-            # 'time_updated',
-            # 'price_open',
-            # 'price_high',
-            'price_close',
-            # 'price_low',
-            'volume',
-            'time_close_dt',
-            # 'price_close_rsi_x',
-            # 'price_close_rsi_y',
-            # 'long_rsi',
-            'price_close_rsi',
-            # 'short_rsi',
-            'signal_rsi']
+            # f'{self.prefix}_long',
+            f'{self.prefix}_short',
+            f'{self.prefix}_signal']
 
         df = self.overtraded.get(cols = cols)
+
+        self.assertCountEqual(cols, df.columns)
         self.assertEqual(len(df.columns), len(cols))
         self.assertEqual(len(df.head(10)), 10)
 
+
     def test_overtraded_get_default(self):
+
         df = self.overtraded.get()
-        self.assertGreater(len(df.columns), 2)
+
+        self.assertEqual(len(df.columns), 4)
         self.assertEqual(len(df.head(10)), 10)
+
 
     def test_overtraded_short(self):
         df = self.overtraded.short()
-        self.assertEqual(len(df.columns), 3)
+        self.assertEqual(len(df.columns), 2)
         self.assertEqual(len(df.head(10)), 10)
+
 
     def test_overtraded_long(self):
         df = self.overtraded.long()
-        self.assertEqual(len(df.columns), 3)
+        self.assertEqual(len(df.columns), 2)
         self.assertEqual(len(df.head(10)), 10)
+
+
+    def test_overtraded_pandas_dataframe(self):
+        self.df_overtraded = self.overtraded.get()
+        self.assertIsInstance(self.df_overtraded, pd.DataFrame)
+
+
+    def test_overtraded_arguments_passed_ok(self):
+
+        self.assertCountEqual(
+            self.df_bucket.columns,
+            self.overtraded.df_bucket.columns)
+
+        self.assertEqual(self.len_rsi, self.overtraded.len_rsi)
+        self.assertEqual(self.high, self.overtraded.high)
+        self.assertEqual(self.low, self.overtraded.low)
+        self.assertEqual(self.col, self.overtraded.col_bucket)
+        self.assertEqual(self.prefix, self.overtraded.prefix)
+
+
+    def test_overtraded_not_none(self):
+        self.assertIsNotNone(self.overtraded)
+        self.assertIsNotNone(self.overtraded.df_bucket)
+        self.assertIsNotNone(self.overtraded.len_rsi)
+        self.assertIsNotNone(self.overtraded.high)
+        self.assertIsNotNone(self.overtraded.low)
+        self.assertIsNotNone(self.overtraded.col_bucket)
+        self.assertIsNotNone(self.overtraded.prefix)
+
 
 
 class Test_controller_signal_overtraded_fake_data(unittest.TestCase):
@@ -113,179 +133,69 @@ class Test_controller_signal_overtraded_fake_data(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
 
-        # Number of candles/buckets to include in the rsi calculation
-        len_rsi = 20
+        # Set params
+        cls.len_rsi = 20
+        cls.high = 60
+        cls.low = 40
+        cls.col = 'price_close'
+        cls.prefix = 'overtraded'
 
         # Generate fake data
         x = np.arange(0, 10, 0.1)
         y = (np.sin(x) + 1)/2 *1000
 
         # Create a dataframe with the fake data
-        df = pd.DataFrame({'price_close':y})
+        cls.df_in = pd.DataFrame({'price_close':y})
 
         # Set id column = index and then as the id column for merging
-        df['id'] = df.index
-        df = df[['id', 'price_close']]
+        cls.df_in['id'] = cls.df_in.index
+        cls.df_in = cls.df_in[['id', 'price_close']]
 
         # Get an instance of the Overtraded object
         cls.overtraded = Overtraded(
-            df_bucket = df,
-            len_rsi = len_rsi,
-            high = 60,
-            low = 40,
-            col = 'price_close',
-            suffix = 'rsi')
+            df_bucket = cls.df_in,
+            len_rsi = cls.len_rsi,
+            high = cls.high,
+            low = cls.low,
+            col = cls.col,
+            prefix = cls.prefix)
 
-    def test_overtraded_get(self):
+
+    def test_overtraded_get_custom_columns(self):
 
         cols = [
             'id',
-            'price_close',
-            'price_close_rsi',
-            'long_rsi',
-            'short_rsi',
-            'signal_rsi'
-            ]
+            f'{self.prefix}_long',
+            # f'{self.prefix}_short',
+            f'{self.prefix}_signal']
 
-        df = self.overtraded.get([cols[1], cols[2], cols[5]])
-        self.assertEqual(len(df.columns), 4)
+        df = self.overtraded.get(cols = cols)
+        self.assertCountEqual(cols, df.columns)
+        self.assertEqual(len(df.columns), len(cols))
         self.assertEqual(len(df.head(10)), 10)
+
 
     def test_overtraded_get_default(self):
         df = self.overtraded.get()
-        self.assertGreater(len(df.columns), 2)
+        self.assertEqual(len(df.columns), 4)
         self.assertEqual(len(df.head(10)), 10)
 
-    def test_overtraded_overbought(self):
+
+    def test_overtraded_short(self):
         df = self.overtraded.short()
-        self.assertEqual(len(df.columns), 3)
+        self.assertEqual(len(df.columns), 2)
         self.assertEqual(len(df.head(10)), 10)
 
-    def test_overtraded_oversold(self):
+
+    def test_overtraded_long(self):
         df = self.overtraded.long()
-        self.assertEqual(len(df.columns), 3)
+        self.assertEqual(len(df.columns), 2)
         self.assertEqual(len(df.head(10)), 10)
 
 
-class Test_controller_signal_overtraded_basics(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(cls):
-
-        # Variables
-        market_id = 1
-        timeframe_id = 6
-        time_end=t.now
-        count = 500
-        len_rsi = 40
-        col = 'price_close'
-        high = 60
-        low = 40
-
-        # Read candle data
-        bucket = Bucket(
-            market_id=market_id,
-            timeframe_id=timeframe_id)
-
-        cls.df_bucket = bucket.read_until(
-            count = count,
-            time_end = time_end)
-
-        cls.overtraded = Overtraded(
-            df_bucket = cls.df_bucket,
-            len_rsi = len_rsi,
-            high = high,
-            low = low,
-            col = col)
-
-        cls.signal = cls.overtraded.get()
 
 
-    def test_overtraded_signal(self):
-
-        self.df_bucket = pd.DataFrame(
-            [
-            (1,100),
-            (1,100),
-            (1,100),
-            (1,100),
-            (1,100),
-            (1,100),
-            (1,100),
-            (1,100),
-            (1,100),
-            (1,100),
-            (1,100),
-            (1,100),
-            (1,100),
-            (1,100),
-            (1,100),
-            (1,100),
-            (1,100),
-            (1,100),
-            (1,100),
-            (1,100),
-            (1,100),
-            (1,100),
-            (1,100),
-            (1,100),
-            (1,100),
-            (1,100),
-            (1,100),
-            (1,100),
-            (1,100),
-            (1,100),
-
-            ],
-            columns = ['id', 'price_close'] )
-
-
-    def test_overtraded_col_names(self):
-
-        col_names = [
-            'id',
-            'market_id',
-            'timeframe_id',
-            'time_open',
-            'time_close',
-            'time_updated',
-            'price_open',
-            'price_high',
-            'price_close',
-            'price_low',
-            'volume',
-            'time_close_dt',
-            'price_close_rsi_x',
-            'price_close_rsi_y',
-            'long_overtraded',
-            'price_close_rsi',
-            'short_overtraded',
-            'signal_overtraded']
-
-        self.assertCountEqual(
-            list(self.signal.columns.values),
-            col_names)
-
-
-    def test_overtraded_has_content(self):
-        self.assertEqual(len(self.signal.tail(10)), 10)
-
-
-    def test_overtraded_pandas_dataframe(self):
-        self.assertIsInstance(self.signal, pd.DataFrame)
-
-
-    def test_overtraded_not_none(self):
-        self.assertIsNotNone(self.signal)
-
-
-
-
-'''
-------------------------------------------------------------------------
-    MAIN
-------------------------------------------------------------------------
-'''
+# MAIN -----------------------------------------------------------------
 
 if __name__ == '__main__':
 

@@ -1,8 +1,4 @@
-'''
-------------------------------------------------------------------------
-    IMPORTS
-------------------------------------------------------------------------
-'''
+# IMPORTS --------------------------------------------------------------
 
 # Standard packages
 import unittest
@@ -17,11 +13,7 @@ from ccat.model.database.bucket import Bucket
 import ccat.controller.helper.df_magic as df_magic
 
 
-'''
-------------------------------------------------------------------------
-    CLASSES
-------------------------------------------------------------------------
-'''
+# TESTS --------------------------------------------------------------
 
 
 class Test_controller_helper_df_magic(unittest.TestCase):
@@ -38,13 +30,12 @@ class Test_controller_helper_df_magic(unittest.TestCase):
 
     def test_df_bucket_column_names(self):
 
-        col_names = [
+        assumed_cols = [
             'id',
             'market_id',
             'timeframe_id',
             'time_open',
             'time_close',
-            'time_close_dt',
             'time_updated',
             'price_open',
             'price_high',
@@ -52,7 +43,9 @@ class Test_controller_helper_df_magic(unittest.TestCase):
             'price_low',
             'volume']
 
-        self.assertCountEqual(list(self.df_in.columns.values),col_names)
+        actual_cols = list(self.df_in.columns.values)
+
+        self.assertCountEqual(actual_cols, assumed_cols)
 
 
     def test_df_magic_diff(self):
@@ -98,11 +91,7 @@ class Test_controller_helper_df_magic(unittest.TestCase):
 
 
 
-'''
-------------------------------------------------------------------------
-    MAIN
-------------------------------------------------------------------------
-'''
+# MAIN -----------------------------------------------------------------
 
 if __name__ == '__main__':
 

@@ -47,7 +47,7 @@ class Test_model_exchange_exchange(unittest.TestCase):
 			type='market',
 			amount=1,
 			)
-		# print('New order: ', self.new_order)
+
 		self.assertIn('timestamp', self.new_order)
 		self.assertIn('orderID', self.new_order['info'])
 

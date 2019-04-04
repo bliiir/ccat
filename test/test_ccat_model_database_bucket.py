@@ -61,17 +61,15 @@ class Test_model_database_bucket(unittest.TestCase):
             'price_high',
             'price_close',
             'price_low',
-            'volume',
-            'time_close_dt']
+            'volume']
+            # 'time_close_dt']
 
         # Set a specific sort column
         cls.sort_col = cls.cols[4]
 
+        # Set a specific sort direction
         cls.sort_dir = 'ASC' # 'DESC'
 
-        # Update database with latest candles for the given
-        # market and timeframe
-        # cls.bucket.update()
 
     def test_model_database_bucket_read_until(self):
 
