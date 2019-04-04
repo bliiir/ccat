@@ -1,24 +1,24 @@
+# IMPORTS --------------------------------------------------------------
+
 # Standard library imports
-pass
+import pdb
 
 # Third party imports
 import pandas as pd
+import numpy as np
 # import pdb
 
 # Local application imports
 pass
 
 
-'''
-------------------------------------------------------------------------
-    FUNCTIONS
-------------------------------------------------------------------------
-'''
+# MODULE --------------------------------------------------------------
 
 def get(
-    df_in,
-    col,
-    val):
+    df_in:pd.DataFrame,
+    col:str,
+    val:float,
+    prefix:str = ''):
     '''Indicates crossovers of one data columns with a fixed value.
     This is useful for example when testing if the RSI indicator has
     crossed over the 70 oversold threshold
@@ -76,22 +76,28 @@ def get(
     '''
     # Create and initialize a new dataframe
 
-    df_out = pd.DataFrame()
-    df_out.iloc[0:0]
+    df_out = df_in[['id', col]].copy()
 
-    # Fill the dataframe with the values from the argument
-    df_out['id']=df_in['id']
-    df_out[col] = df_in[col].copy()
-    df_out['x_value'] = val
+    df_out[f'{prefix}_val'] = val
 
-    df_out['crossover'] = (
-        (df_out[col] > df_out['x_value']) &
-        (df_out[col].shift(1) <= df_out['x_value'].shift(1)))
+    df_out[f'{prefix}_crossover'] = (
+        (df_out[col] > val) &
+        (df_out[col].shift(1) <= val))
 
-    df_out['crossunder'] = (
-        (df_out[col] < df_out['x_value']) &
-        (df_out[col].shift(1) >= df_out['x_value'].shift(1)))
+    df_out[f'{prefix}_crossunder'] = (
+        (df_out[col] < val) &
+        (df_out[col].shift(1) >= val))
 
-    df_out['cross'] = (df_out['crossover']) | df_out['crossunder']
+    df_out[f'{prefix}_cross'] = (
+        df_out[f'{prefix}_crossover'] |
+        df_out[f'{prefix}_crossunder'])
+
+    df_out = df_out[[
+        'id',
+        f'{prefix}_val',  # TODO: Do I need this column? The information is available
+        f'{prefix}_crossover',
+        f'{prefix}_crossunder',
+        f'{prefix}_cross']]
 
     return df_out
+

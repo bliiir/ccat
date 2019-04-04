@@ -1,3 +1,5 @@
+# IMPORTS --------------------------------------------------------------
+
 # Standard library imports
 import pdb
 
@@ -10,11 +12,7 @@ pass
 
 
 
-'''
-------------------------------------------------------------------------
-    FUNCTIONS
-------------------------------------------------------------------------
-'''
+# MODULE ---------------------------------------------------------------
 
 def merge(
     dfs:list,
@@ -32,14 +30,14 @@ def merge(
     return df_out
 
 
-
 def crop(
-    df:pd.DataFrame,
+    df_in:pd.DataFrame,
     cols:list = None,
     rows:int = None) -> pd.DataFrame:
     '''Crop a dataframe'''
 
     # return df_out
+    df_out = df_in.copy()
 
 
     # Subset dataframe to columns indicated by the cols argument
@@ -50,14 +48,13 @@ def crop(
             cols.insert(0, 'id')
 
         # Subset df_out to cols
-        df =  df[cols]
+        df_out =  df_out[cols]
 
     # Subset the dataframe to the last `rows` rows
     if rows != None:
-        df = df.tail(rows)
+        df_out = df_out.tail(rows)
 
-    return df
-
+    return df_out
 
 
 def dif(

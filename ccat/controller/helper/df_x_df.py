@@ -1,5 +1,7 @@
+# IMPORTS --------------------------------------------------------------
+
 # Standard library imports
-pass
+import pdb
 
 # Third party imports
 import pandas as pd
@@ -9,13 +11,14 @@ import pandas as pd
 pass
 
 
-'''
-------------------------------------------------------------------------
-    FUNCTIONS
-------------------------------------------------------------------------
-'''
+# FUNCTIONS ------------------------------------------------------------
 
-def get(df_in_1, df_in_2, col_1:str, col_2:str):
+def get(
+    df_in_1:pd.DataFrame,
+    df_in_2:pd.DataFrame,
+    col_1:str,
+    col_2:str,
+    prefix = ''):
 
     '''Indicates crossovers of two data columns
 
@@ -57,47 +60,51 @@ def get(df_in_1, df_in_2, col_1:str, col_2:str):
                     The id that is used to merge and maintain
                     correspondance with the database
 
-                col_1:
+                {col_1}:
                     A column with df_in_1[col_1] data
 
-                col_2:
+                {col_2}:
                     A column with df_in_2[col_2] data
 
-                'crossover':
+                '{}_crossover':
                     Boolen values indicating if the values in col_1
                     have crossed over the values in col_2
 
-                'crossunder':
+                '{}_crossunder':
                     Boolen values indicating if the values in col_1
                     have crossed under the values in col_2
 
-                'cross':
+                '{}_cross':
                     Boolen values indicating if the values in col_1
                     have crossed the values in col_2
 
     '''
 
-    # Merge the two dataframes into one on key id
-
-    df_in = pd.merge(
+    # Merge the two dataframes into one on id
+    df_out = pd.merge(
         df_in_1[['id', col_1]],
         df_in_2[['id', col_2]],
         on='id')
 
-    # breakpoint()
-    df_out = pd.DataFrame()
-    df_out.iloc[0:0]
+    # Calculate crossover
+    df_out[f'{prefix}_crossover'] = (
+        (df_out[col_1] > df_out[col_2]) &
+        (df_out[col_1].shift(1) <= df_out[col_2].shift(1)))
 
-    df_out['id']=df_in['id']
-    df_out[col_1] = df_in[col_1].copy()
-    df_out[col_2] = df_in[col_2].copy()
+    # Calculate crossunder
+    df_out[f'{prefix}_crossunder'] = (
+        (df_out[col_1] < df_out[col_2]) &
+        (df_out[col_1].shift(1) >= df_out[col_2].shift(1)))
 
-    df_out[f'crossover'] = ((df_in[col_1] > df_in[col_2]) &
-        (df_in[col_1].shift(1) <= df_in[col_2].shift(1)))
+    # Calculate cross
+    df_out[f'{prefix}_cross'] = (
+        df_out[f'{prefix}_crossover'] | df_out[f'{prefix}_crossunder'])
 
-    df_out[f'crossunder'] = ((df_in[col_1] < df_in[col_2]) &
-        (df_in[col_1].shift(1) >= df_in[col_2].shift(1)))
-
-    df_out['cross'] = (df_out[f'crossover']) | df_out[f'crossunder']
+    # Subset dataframe
+    df_out = df_out[[
+        'id',
+        f'{prefix}_crossover',
+        f'{prefix}_crossunder',
+        f'{prefix}_cross']]
 
     return df_out
