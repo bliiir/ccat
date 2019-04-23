@@ -61,7 +61,6 @@ class Bucket():
         query:str,
         sort_col:str,
         sort_dir:str) -> pd.DataFrame:
-        # TODO: REVERSE THE DATAFRAME TO HAVE THE LATEST DATE AS FIRST ROW?
         # TODO: ENSURE THE DATABASE IS UP TO DATE AT ALL TIMES
 
         # self.update() ###### REMOVE WHEN SUPERVISORD OR CRONJOB
