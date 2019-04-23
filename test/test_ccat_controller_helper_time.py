@@ -1,8 +1,4 @@
-'''
-------------------------------------------------------------------------
-    IMPORTS
-------------------------------------------------------------------------
-'''
+# IMPORTS --------------------------------------------------------------
 
 # Standard packages
 import unittest
@@ -18,11 +14,7 @@ import ccat.controller.helper.time as t
 from ccat.model.database.bucket import Bucket
 
 
-'''
-------------------------------------------------------------------------
-    CLASSES
-------------------------------------------------------------------------
-'''
+# TESTS ----------------------------------------------------------------
 
 
 class Test_controller_helper_time(unittest.TestCase):
@@ -77,7 +69,7 @@ class Test_controller_helper_time(unittest.TestCase):
 
         self.assertAlmostEqual(
             floor((dt.utcnow().timestamp())),
-            floor(now/1000), places = 2 )
+            floor(now/1000), delta = 100 )
 
 
     def test_time_past(self):
@@ -90,33 +82,30 @@ class Test_controller_helper_time(unittest.TestCase):
         self.assertAlmostEqual(
             floor(((dt.utcnow() - rd(hours=1)).timestamp())),
             floor(hour_ago/1000),
-            places = 2)
+            delta = 100)
 
         self.assertAlmostEqual(
             floor(((dt.utcnow() - rd(days=1)).timestamp())),
             floor(day_ago/1000),
-            places = 2)
+            delta = 100)
 
         self.assertAlmostEqual(
             floor(((dt.utcnow() - rd(weeks=1)).timestamp())),
             floor(week_ago/1000),
-            places = 2)
+            delta = 100)
 
         self.assertAlmostEqual(
             floor(((dt.utcnow() - rd(months=1)).timestamp())),
             floor(month_ago/1000),
-            places = 2)
+            delta = 100)
 
         self.assertAlmostEqual(
             floor(((dt.utcnow() - rd(years=1)).timestamp())),
             floor(year_ago/1000),
-            places = 2)
+            delta = 100)
 
-'''
-------------------------------------------------------------------------
-    MAIN
-------------------------------------------------------------------------
-'''
+
+# MAIN -----------------------------------------------------------------
 
 if __name__ == '__main__':
 
