@@ -73,7 +73,7 @@ signal = strategy.signal()
 # LOGGING --------------------------------------------------------------
 
 logging.basicConfig(
-    filename=config.lf_bucket_update,
+    filename=config.lf_bot,
     level=logging.INFO)
 
 

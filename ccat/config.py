@@ -28,5 +28,6 @@ db_user = os.environ["DB_UN"]
 db_password = os.environ['DB_PW']
 
 # log files
+lf_bot = os.environ["LF_BOT"]
 lf_bucket_update = os.environ["LF_BUCKET_UPDATE"]
 lf_bucket_historical = os.environ["LF_BUCKET_HISTORICAL"]
