@@ -1,5 +1,5 @@
 aiodns==1.1.1
-aiohttp==3.5.4
+aiohttp==3.7.4
 async-timeout==3.0.1
 attrs==18.2.0
 -e git+https://github.com/bliiir/ccat.git@b4a90900e19409bb16ac4887463ed6d2d9367f77#egg=ccat
