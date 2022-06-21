@@ -12,7 +12,7 @@ configobj==5.0.6
 humanize==0.5.1
 idna==2.8
 multidict==4.5.2
-numpy==1.16.1
+numpy==1.22.0
 pandas==0.24.1
 pgcli==2.0.2
 pgspecial==1.11.5
