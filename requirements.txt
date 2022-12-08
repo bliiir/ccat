@@ -4,7 +4,7 @@ async-timeout==3.0.1
 attrs==18.2.0
 -e git+https://github.com/bliiir/ccat.git@b4a90900e19409bb16ac4887463ed6d2d9367f77#egg=ccat
 ccxt==1.18.258
-certifi==2018.11.29
+certifi==2022.12.7
 chardet==3.0.4
 cli-helpers==1.1.0
 Click==7.0
